@@ -1,4 +1,4 @@
-import baseConfig from "@oyo/eslint-config/base"
+import baseConfig from "@omasla/eslint-config/base"
 
 /** @type {import('typescript-eslint').Config} */
 export default [

@@ -1,7 +1,7 @@
 import { StyleSheet, Text, useWindowDimensions, View } from "react-native"
 import Svg, { Circle, Ellipse, G, Line, Path } from "react-native-svg"
 
-import type { PublicGroup } from "@oyo/convex"
+import type { PublicGroup } from "@omasla/convex"
 
 import { groupIdentity } from "~/lib/group-identity"
 

@@ -1,14 +1,14 @@
 import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
 
-import type { AuthRequestContext } from "@oyo/auth/request-context"
+import type { AuthRequestContext } from "@omasla/auth/request-context"
 import {
   handlers,
   invalidateSessionToken,
   isSecureContext,
   validateToken,
-} from "@oyo/auth"
-import { env } from "@oyo/auth/env"
+} from "@omasla/auth"
+import { env } from "@omasla/auth/env"
 import {
   completeNativeGrant,
   createNativeGrant,
@@ -16,9 +16,9 @@ import {
   NATIVE_FLOW_SECONDS,
   pendingNativeGrantId,
   sessionCookieValue,
-} from "@oyo/auth/native"
-import { authRequestContext } from "@oyo/auth/request-context"
-import { sessionId } from "@oyo/auth/tokens"
+} from "@omasla/auth/native"
+import { authRequestContext } from "@omasla/auth/request-context"
+import { sessionId } from "@omasla/auth/tokens"
 
 export const runtime = "nodejs"
 

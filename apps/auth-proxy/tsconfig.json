@@ -1,4 +1,4 @@
 {
-  "extends": "@oyo/tsconfig/base.json",
+  "extends": "@omasla/tsconfig/base.json",
   "include": ["routes"]
 }

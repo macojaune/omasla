@@ -1,5 +1,5 @@
 {
-  "extends": "@oyo/tsconfig/internal-package.json",
+  "extends": "@omasla/tsconfig/internal-package.json",
   "include": ["src"],
   "exclude": ["node_modules"]
 }

@@ -10,8 +10,8 @@ Créer l'environnement une seule fois :
 
 ```sh
 node scripts/setup-local.mjs
-pnpm --filter @oyo/db with-env drizzle-kit migrate
-pnpm --filter @oyo/convex exec convex dev
+pnpm --filter @omasla/db with-env drizzle-kit migrate
+pnpm --filter @omasla/convex exec convex dev
 ```
 
 Le script crée `.env` et des clés aléatoires de développement ; il refuse d'écraser un environnement existant. SQLite est dans `.cache/omasla-auth.db`. Les migrations sont appliquées à cette base locale. Ne pas remplacer ce chemin par une base réelle pour exécuter les fixtures.
@@ -21,16 +21,16 @@ Sans compte ni déploiement déjà configuré, `convex dev` initialise un backen
 Pendant que le backend local tourne, dans un second terminal :
 
 ```sh
-pnpm --filter @oyo/convex exec convex env set AUTH_ISSUER_URL http://localhost:3185
-pnpm --filter @oyo/convex exec convex env set ALLOW_LOCAL_FIXTURES true
-pnpm --filter @oyo/convex exec convex env set BOOTSTRAP_ADMIN_SUBJECT simulation-admin
-pnpm --filter @oyo/nextjs dev
+pnpm --filter @omasla/convex exec convex env set AUTH_ISSUER_URL http://localhost:3185
+pnpm --filter @omasla/convex exec convex env set ALLOW_LOCAL_FIXTURES true
+pnpm --filter @omasla/convex exec convex env set BOOTSTRAP_ADMIN_SUBJECT simulation-admin
+pnpm --filter @omasla/nextjs dev
 ```
 
 Dans un troisième terminal :
 
 ```sh
-pnpm --filter @oyo/nextjs with-env pnpm --filter @oyo/expo dev:web --port 3186
+pnpm --filter @omasla/nextjs with-env pnpm --filter @omasla/expo dev:web --port 3186
 ```
 
 - `http://localhost:3185/map` : carte/annuaire web existant, raccordé au contrat public du socle.
@@ -55,8 +55,8 @@ Le scénario traverse les vrais endpoints HTTP, le JWT signé et la vérificatio
 ```sh
 pnpm check
 pnpm lint:ws
-pnpm --filter @oyo/nextjs build
-pnpm --filter @oyo/nextjs with-env pnpm --filter @oyo/expo export
+pnpm --filter @omasla/nextjs build
+pnpm --filter @omasla/nextjs with-env pnpm --filter @omasla/expo export
 ```
 
 La CI exécute types, lint, tests, build Next et exports iOS/Android/web avec sa configuration locale jetable. L'export Expo produit des bundles JS/Hermes ; il ne remplace pas la compilation native, la signature ou la validation en arrière-plan sur appareil.
@@ -64,7 +64,7 @@ La CI exécute types, lint, tests, build Next et exports iOS/Android/web avec sa
 ## Configuration restant à fournir
 
 - Connexion publique décidée : Google, Apple et e-mail par lien de connexion. Les identifiants fournisseurs et le transport Brevo doivent être configurés côté serveur ; aucun compte fournisseur n’a été créé ou modifié. Sans configuration, la consultation publique reste disponible. Voir la décision d’identité pour le contrat des callbacks et de l’e-mail.
-- Cartographie : token public Mapbox pour le web, clé Google Maps restreinte pour Android ; iOS utilise la carte native. Sans token Mapbox, le web conserve un annuaire explicite.
+- Cartographie : MapLibre React Native et tuiles vectorielles Plan IGN pour l’app iOS/Android, avec style Omasla et bâtiments extrudés selon les hauteurs disponibles. Aucun jeton Mapbox ou clé Google n’est requis pour ce composant. Le site Next.js utilise toujours Mapbox et conserve un annuaire explicite sans token. Le cache du catalogue public ne télécharge pas le fond de carte hors ligne. Voir [les options de cartographie](map-options-2026-10-20.md).
 - Comptes Apple/Google/EAS et autorisations de publication. Une session CLI EAS connectée, des identifiants de signature et des appareils sont nécessaires pour les builds terrain.
 - Habilitations des référents et de l’équipe : les modérateurs et administrateurs habilitent/révoquent les référents, règlent le suivi, arrêtent les lives et retirent les observations. L’attribution des rôles de l’équipe reste réservée aux administrateurs.
 - Seuils de fraîcheur, durée, rayon autour de Pointe-à-Pitre, précision et vitesse à mesurer sur le terrain. La politique de simulation n'est pas une recommandation opérationnelle.

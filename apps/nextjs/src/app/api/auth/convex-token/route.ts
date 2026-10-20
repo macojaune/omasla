@@ -1,10 +1,10 @@
-import type { NextRequest} from "next/server"
+import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
 
-import { validateToken } from "@oyo/auth"
-import { env } from "@oyo/auth/env"
-import { bearerSession } from "@oyo/auth/native"
-import { issueAccessToken } from "@oyo/auth/tokens"
+import { validateToken } from "@omasla/auth"
+import { env } from "@omasla/auth/env"
+import { bearerSession } from "@omasla/auth/native"
+import { issueAccessToken } from "@omasla/auth/tokens"
 
 export const runtime = "nodejs"
 

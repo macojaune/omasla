@@ -1,8 +1,8 @@
-import type { NextRequest} from "next/server"
+import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
 import { z } from "zod"
 
-import { exchangeNativeGrant } from "@oyo/auth/native"
+import { exchangeNativeGrant } from "@omasla/auth/native"
 
 export const runtime = "nodejs"
 

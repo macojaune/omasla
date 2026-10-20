@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Menu } from "lucide-react"
 
-import { Button } from "@oyo/ui/button"
+import { Button } from "@omasla/ui/button"
 
 export function NavigationBar({
   toggleSidebar,
@@ -24,7 +24,7 @@ export function NavigationBar({
           </Button>
           <Link href="/">
             <h1 className="text-xl font-bold hover:opacity-70">
-              O Mas La ? <small className="text-sm">- La carte</small>
+              Omasla <small className="text-sm">- La carte</small>
             </h1>
           </Link>
         </div>

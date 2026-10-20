@@ -6,10 +6,10 @@ import Link from "next/link"
 import { ConvexHttpClient } from "convex/browser"
 import { useConvexAuth, useConvexConnectionState, useQuery } from "convex/react"
 
-import type { Id, TrackingPolicy } from "@oyo/convex"
-import { safeSignOut } from "@oyo/auth/convex-client"
-import { api } from "@oyo/convex"
-import { Button } from "@oyo/ui/button"
+import type { Id, TrackingPolicy } from "@omasla/convex"
+import { safeSignOut } from "@omasla/auth/convex-client"
+import { api } from "@omasla/convex"
+import { Button } from "@omasla/ui/button"
 
 import { env } from "~/env"
 

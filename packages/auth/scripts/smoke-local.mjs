@@ -70,7 +70,7 @@ const fixture = JSON.parse(
     "pnpm",
     [
       "--filter",
-      "@oyo/convex",
+      "@omasla/convex",
       "exec",
       "convex",
       "run",

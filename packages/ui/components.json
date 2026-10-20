@@ -10,7 +10,7 @@
     "cssVariables": true
   },
   "aliases": {
-    "utils": "@oyo/ui",
+    "utils": "@omasla/ui",
     "components": "src/",
     "ui": "src/"
   }

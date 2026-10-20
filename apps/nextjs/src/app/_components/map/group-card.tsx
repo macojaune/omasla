@@ -1,9 +1,9 @@
 import { formatDistance } from "date-fns"
 import { fr } from "date-fns/locale"
 
-import type { FreshnessPolicy, PublicGroup } from "@oyo/convex"
-import { positionFreshness } from "@oyo/convex"
-import { Card } from "@oyo/ui/card"
+import type { FreshnessPolicy, PublicGroup } from "@omasla/convex"
+import { positionFreshness } from "@omasla/convex"
+import { Card } from "@omasla/ui/card"
 
 interface GroupCardProps {
   group: PublicGroup

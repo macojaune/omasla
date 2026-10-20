@@ -1,4 +1,4 @@
-import type { PublicGroup } from "@oyo/convex"
+import type { PublicGroup } from "@omasla/convex"
 
 export type DemoEmblem = "drum" | "waves" | "sun" | "spark" | "horizon"
 

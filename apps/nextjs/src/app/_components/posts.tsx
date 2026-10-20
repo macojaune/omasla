@@ -1,9 +1,9 @@
 "use client"
 
-import type { RouterOutputs } from "@oyo/api"
-import { CreatePostSchema } from "@oyo/db/schema"
-import { cn } from "@oyo/ui"
-import { Button } from "@oyo/ui/button"
+import type { RouterOutputs } from "@omasla/api"
+import { CreatePostSchema } from "@omasla/db/schema"
+import { cn } from "@omasla/ui"
+import { Button } from "@omasla/ui/button"
 import {
   Form,
   FormControl,
@@ -11,9 +11,9 @@ import {
   FormItem,
   FormMessage,
   useForm,
-} from "@oyo/ui/form"
-import { Input } from "@oyo/ui/input"
-import { toast } from "@oyo/ui/toast"
+} from "@omasla/ui/form"
+import { Input } from "@omasla/ui/input"
+import { toast } from "@omasla/ui/toast"
 
 import { api } from "~/trpc/react"
 

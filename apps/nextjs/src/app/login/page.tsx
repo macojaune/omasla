@@ -1,11 +1,11 @@
 import type { Metadata } from "next"
 
-import { env } from "@oyo/auth/env"
+import { env } from "@omasla/auth/env"
 
 import { LoginForm } from "./login-form"
 
 export const metadata: Metadata = {
-  title: "Connexion — O Mas La ?",
+  title: "Connexion — Omasla",
   robots: { index: false, follow: false },
 }
 

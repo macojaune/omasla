@@ -2,9 +2,9 @@ import { createHmac } from "node:crypto"
 import type { EmailConfig } from "next-auth/providers/email"
 import { z } from "zod"
 
-import { lt, sql } from "@oyo/db"
-import { db } from "@oyo/db/client"
-import { AuthEmailLimit } from "@oyo/db/schema"
+import { lt, sql } from "@omasla/db"
+import { db } from "@omasla/db/client"
+import { AuthEmailLimit } from "@omasla/db/schema"
 
 import { env } from "../env"
 
@@ -80,10 +80,10 @@ export function emailProvider(): EmailConfig {
           },
           signal: AbortSignal.timeout(10_000),
           body: JSON.stringify({
-            sender: { email: env.AUTH_EMAIL_FROM, name: "O Mas La ?" },
+            sender: { email: env.AUTH_EMAIL_FROM, name: "Omasla" },
             to: [{ email: identifier }],
-            subject: "Votre lien de connexion à O Mas La ?",
-            textContent: `Pour vous connecter à O Mas La ?, ouvrez ce lien dans les 15 prochaines minutes :\n\n${url}\n\nCe lien ne peut être utilisé qu’une seule fois. Si vous n’avez pas demandé cette connexion, ignorez ce message.`,
+            subject: "Votre lien de connexion à Omasla",
+            textContent: `Pour vous connecter à Omasla, ouvrez ce lien dans les 15 prochaines minutes :\n\n${url}\n\nCe lien ne peut être utilisé qu’une seule fois. Si vous n’avez pas demandé cette connexion, ignorez ce message.`,
             headers: { "X-Mailin-Tag": "authentication" },
           }),
         })

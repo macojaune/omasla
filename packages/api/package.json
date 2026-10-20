@@ -1,5 +1,5 @@
 {
-  "name": "@oyo/api",
+  "name": "@omasla/api",
   "version": "1.1.0",
   "private": true,
   "type": "module",
@@ -19,20 +19,20 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@oyo/auth": "workspace:*",
-    "@oyo/db": "workspace:*",
+    "@omasla/auth": "workspace:*",
+    "@omasla/db": "workspace:*",
     "@trpc/server": "catalog:",
     "expo-server-sdk": "^3.13.0",
     "superjson": "2.2.1",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@oyo/eslint-config": "workspace:*",
-    "@oyo/prettier-config": "workspace:*",
-    "@oyo/tsconfig": "workspace:*",
+    "@omasla/eslint-config": "workspace:*",
+    "@omasla/prettier-config": "workspace:*",
+    "@omasla/tsconfig": "workspace:*",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "typescript": "catalog:"
   },
-  "prettier": "@oyo/prettier-config"
+  "prettier": "@omasla/prettier-config"
 }

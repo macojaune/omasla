@@ -1,4 +1,4 @@
-import { auth } from "@oyo/auth"
+import { auth } from "@omasla/auth"
 
 import { OperationsConsole } from "./operations-console"
 

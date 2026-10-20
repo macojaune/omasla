@@ -3,7 +3,7 @@
 import { useState } from "react"
 import dynamic from "next/dynamic"
 
-import type { Id } from "@oyo/convex"
+import type { Id } from "@omasla/convex"
 
 import { usePublicCatalog } from "~/hooks/usePublicCatalog"
 import { NavigationBar } from "../_components/map/navigation-bar"

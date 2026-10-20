@@ -1,5 +1,5 @@
 {
-  "name": "@oyo/db",
+  "name": "@omasla/db",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -40,14 +40,14 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@oyo/eslint-config": "workspace:*",
-    "@oyo/prettier-config": "workspace:*",
-    "@oyo/tsconfig": "workspace:*",
+    "@omasla/eslint-config": "workspace:*",
+    "@omasla/prettier-config": "workspace:*",
+    "@omasla/tsconfig": "workspace:*",
     "dotenv-cli": "^7.4.4",
     "drizzle-kit": "^0.28.1",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "typescript": "catalog:"
   },
-  "prettier": "@oyo/prettier-config"
+  "prettier": "@omasla/prettier-config"
 }

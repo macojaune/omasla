@@ -1,6 +1,6 @@
-# O Mas La ?
+# Omasla
 
-O Mas La aide le public du carnaval à retrouver les groupes en mouvement. Une position peut provenir du suivi live d'un référent ou d'une observation du public hors live.
+Omasla aide le public du carnaval à retrouver les groupes en mouvement. Une position peut provenir du suivi live d'un référent ou d'une observation du public hors live.
 
 ## Langage
 

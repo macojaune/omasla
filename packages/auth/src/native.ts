@@ -1,6 +1,6 @@
-import { and, eq, gt, isNotNull, isNull, lt } from "@oyo/db"
-import { db } from "@oyo/db/client"
-import { NativeAuthGrant } from "@oyo/db/schema"
+import { and, eq, gt, isNotNull, isNull, lt } from "@omasla/db"
+import { db } from "@omasla/db/client"
+import { NativeAuthGrant } from "@omasla/db/schema"
 
 import { validateToken } from "./config"
 import {

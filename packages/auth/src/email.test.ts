@@ -12,8 +12,8 @@ import {
   vi,
 } from "vitest"
 
-import type { db as AuthDatabase } from "@oyo/db/client"
-import { sql } from "@oyo/db"
+import type { db as AuthDatabase } from "@omasla/db/client"
+import { sql } from "@omasla/db"
 
 import type * as Routes from "../../../apps/nextjs/src/app/api/auth/[...nextauth]/route"
 import type * as Config from "./config"
@@ -42,7 +42,7 @@ beforeAll(async () => {
   vi.stubEnv("AUTH_APPLE_SECRET", "fixture-apple-secret")
   vi.stubEnv("AUTH_BREVO_API_KEY", "fixture-brevo-key-never-sent")
   vi.stubEnv("AUTH_EMAIL_FROM", "login@example.invalid")
-  db = (await import("@oyo/db/client")).db
+  db = (await import("@omasla/db/client")).db
   for (const name of [
     "0000_majestic_surge",
     "0001_native_auth_grant",

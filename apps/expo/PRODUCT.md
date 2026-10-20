@@ -1,4 +1,4 @@
-# O Mas La — application mobile
+# Omasla — application mobile
 
 <!-- impeccable:product-schema 1 -->
 
@@ -32,7 +32,7 @@ Usage mobile sur le terrain, dehors, pendant des sorties de durée variable et a
 
 ## Brand Commitments
 
-Nom O Mas La. Interface française. Demande explicite : une expérience immersive et fluide au niveau des grandes applications de navigation, sans reprendre la page carte du site historique.
+Nom Omasla. Interface française. Demande explicite : une expérience immersive et fluide au niveau des grandes applications de navigation, sans reprendre la page carte du site historique.
 
 ## Evidence on Hand
 

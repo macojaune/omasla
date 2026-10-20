@@ -1,5 +1,5 @@
 {
-  "name": "@oyo/tailwind-config",
+  "name": "@omasla/tailwind-config",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -20,12 +20,12 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
-    "@oyo/eslint-config": "workspace:*",
-    "@oyo/prettier-config": "workspace:*",
-    "@oyo/tsconfig": "workspace:*",
+    "@omasla/eslint-config": "workspace:*",
+    "@omasla/prettier-config": "workspace:*",
+    "@omasla/tsconfig": "workspace:*",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "typescript": "catalog:"
   },
-  "prettier": "@oyo/prettier-config"
+  "prettier": "@omasla/prettier-config"
 }

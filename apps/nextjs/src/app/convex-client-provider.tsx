@@ -4,7 +4,7 @@ import type { ReactNode } from "react"
 import { ConvexProviderWithAuth, ConvexReactClient } from "convex/react"
 import { SessionProvider } from "next-auth/react"
 
-import { useConvexAuth } from "@oyo/auth/convex-client"
+import { useConvexAuth } from "@omasla/auth/convex-client"
 
 import { env } from "~/env"
 

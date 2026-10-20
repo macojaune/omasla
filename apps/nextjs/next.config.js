@@ -9,8 +9,12 @@ const config = {
   reactStrictMode: true,
 
   /** Enables hot reloading for local packages without a build step */
-  transpilePackages: ["@oyo/api", "@oyo/auth", "@oyo/db", "@oyo/ui"],
-
+  transpilePackages: [
+    "@omasla/api",
+    "@omasla/auth",
+    "@omasla/db",
+    "@omasla/ui",
+  ],
 }
 
 export default config

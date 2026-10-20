@@ -6,8 +6,8 @@ import { ConvexError } from "convex/values"
 import { Loader2 } from "lucide-react"
 import { getProviders, signIn, useSession } from "next-auth/react"
 
-import { api } from "@oyo/convex"
-import { Button } from "@oyo/ui/button"
+import { api } from "@omasla/convex"
+import { Button } from "@omasla/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -15,9 +15,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@oyo/ui/dialog"
-import { Label } from "@oyo/ui/label"
-import { toast } from "@oyo/ui/toast"
+} from "@omasla/ui/dialog"
+import { Label } from "@omasla/ui/label"
+import { toast } from "@omasla/ui/toast"
 
 import type { CatalogState } from "~/hooks/usePublicCatalog"
 import { env } from "~/env"

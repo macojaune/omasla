@@ -66,7 +66,7 @@ function runConvex(args) {
       "pnpm",
       [
         "--filter",
-        "@oyo/convex",
+        "@omasla/convex",
         "exec",
         "convex",
         ...args,

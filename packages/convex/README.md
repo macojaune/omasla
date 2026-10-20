@@ -67,9 +67,9 @@ Les anciennes écritures `users.create/startTracking/stopTracking`, `positions.s
 Depuis la racine :
 
 ```sh
-pnpm --filter @oyo/convex test
-pnpm --filter @oyo/convex typecheck
-pnpm --filter @oyo/convex lint
+pnpm --filter @omasla/convex test
+pnpm --filter @omasla/convex typecheck
+pnpm --filter @omasla/convex lint
 ```
 
 Les tests utilisent les fonctions publiques avec `convex-test`, des identités synthétiques et une horloge contrôlée. Ils couvrent les refus de rôle et de révocation, les conflits d'appareil/génération, les transactions concurrentes, la fraîcheur, l'historique ancien, les arrêts automatiques et l'administration. `withIdentity` ne constitue pas une preuve cryptographique du JWT : celle-ci relève des tests du service d'identité et du runtime local.

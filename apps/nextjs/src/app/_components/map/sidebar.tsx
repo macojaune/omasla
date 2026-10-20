@@ -1,7 +1,7 @@
 "use client"
 
-import type { Id } from "@oyo/convex"
-import { ScrollArea } from "@oyo/ui/scroll-area"
+import type { Id } from "@omasla/convex"
+import { ScrollArea } from "@omasla/ui/scroll-area"
 
 import type { CatalogState } from "~/hooks/usePublicCatalog"
 import { AddPositionButton } from "./add-position-button"

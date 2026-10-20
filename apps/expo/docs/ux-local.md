@@ -1,13 +1,13 @@
 # Prototype local de navigation
 
-La refonte visuelle commencée le 13 octobre 2026 se développe dans `refonte-2027`, uniquement en local. La refonte est intégrée localement dans `develop` à la demande de Marvin, sans push ni déploiement. Le runtime testé reste servi depuis le worktree `refonte-2027`. La carte reste montée pendant la recherche et la sélection d’un groupe ; la fiche remplace le contenu du panneau. Le compte et la déclaration s’ouvrent au-dessus de cette scène. La version tablette utilise un panneau latéral.
+La refonte visuelle commencée le 13 octobre 2026 dans `refonte-2027` a été intégrée et poussée sur `develop` le 14 octobre au commit `012df08`, avec CI validée, sans déploiement. Le code de référence et les commandes ci-dessous visent désormais `develop`, avec les packages `@omasla/*`. Le runtime de la recette native du 14 octobre reste servi depuis le worktree `refonte-2027` ; il ne doit pas être confondu avec le code renommé le 20 octobre. La carte reste montée pendant la recherche et la sélection d’un groupe ; la fiche remplace le contenu du panneau. Le compte et la déclaration s’ouvrent au-dessus de cette scène. La version tablette utilise un panneau latéral.
 
 ## Démarrer Expo
 
 Le backend Convex local et Next/Auth doivent déjà tourner selon `../../../docs/development.md`. Depuis la racine du worktree :
 
 ```sh
-REACT_NATIVE_PACKAGER_HOSTNAME=localhost pnpm --filter @oyo/nextjs with-env pnpm --filter @oyo/expo dev --dev-client --localhost --port 3186 --max-workers 1
+REACT_NATIVE_PACKAGER_HOSTNAME=localhost pnpm --filter @omasla/nextjs with-env pnpm --filter @omasla/expo dev --dev-client --localhost --port 3186 --max-workers 1
 ```
 
 Sur ce Mac, `--localhost` écoute sur `::1` tandis qu’Expo produit par défaut une URL de bundle `127.0.0.1`. La variable ci-dessus maintient le manifeste et son bundle sur `localhost`. `http://localhost:3186/status` doit répondre `packager-status:running`.
@@ -64,22 +64,21 @@ La revue a conduit à adapter le cadrage à la hauteur du panneau et au texte ag
 
 Le renouvellement des fixtures a aussi été renforcé après un timeout local : la prochaine exécution est programmée indépendamment de la mutation des positions. Deux lectures espacées de plus de 30 secondes ont vérifié leur renouvellement, et les deux groupes de smoke test existants ont été préservés.
 
-
 ## Composition A — approbation et validation du 14 octobre 2026
 
 Marvin a retenu **A — Recherche et fiche dans un seul panneau bas**. La référence approuvée est `../.impeccable/mocks/comparison-20261013/a.png`. La recherche est persistante dans le panneau, la liste devient la fiche sans quitter la carte et la fermeture retrouve la requête. Le haut de la scène conserve le nom discret et le compte. Les trois crans du téléphone deviennent une colonne latérale sur iPad. La fiche regroupe statut/source/âge, nomme le « Référent GPS » et propose « Rejoindre ce point » avec la limite du dernier point connu. Les règles de contribution restent celles du produit.
 
 Le client iOS existant est utilisé avec Metro ; ces changements JavaScript n’ont pas nécessité une nouvelle compilation native. Les vérifications ci-dessous sont locales et utilisent cinq groupes fictifs explicitement identifiés. Aucun commit, push, merge ni déploiement n’est associé à cette passe.
 
-| Contrôle | Preuve et limite |
-| --- | --- |
-| Recherche et retour | La saisie de « Tambour » via le champ natif filtre la liste ; la sélection ouvre la fiche et la fermeture conserve la requête. La recherche « zzz » affiche zéro résultat et « Voir tous les groupes » ramène au catalogue. Le clavier logiciel n’a pas été obtenu par le contrôle de Simulator ; sa géométrie reste à tester. |
-| Panneau | Glissement physique du cran réduit au cran intermédiaire et actions accessibles de réduction/agrandissement exercés. Le cran est exposé dans l’arbre d’accessibilité ; aucune lecture parlée VoiceOver n’en est déduite. |
-| Carte et fiche | Le cadrage attend le retour du panneau au cran intermédiaire et laisse le groupe visible dans les rues de Pointe-à-Pitre. Le suivi live masque la contribution. La fiche Horizon sans position n’affiche aucun bouton Rejoindre ; seule la contribution est proposée. |
-| iPad | Catalogue, filtre live avec deux résultats et fiche du groupe exercés dans le panneau latéral. |
-| Navigation externe | « Rejoindre ce point » ouvre Plans. La permission de localisation a été refusée ; le trajet complet, sa qualité et l’arrivée au groupe ne sont pas validés. |
-| Thème et texte | Captures natives clair/sombre. Le passage à chaud de la taille normale au texte maximal a révélé une mesure ancienne des textes ; la clé `fontScale` de `Label` et du texte de `Button` renouvelle cette mesure. La capture corrigée et l’accès au bouton après défilement ont été contrôlés, puis le retour à la taille normale sans relance : plus de caractères coupés et requête conservée. |
-| Contrôles code | TypeScript, ESLint et les 37 tests mobiles passent après la correction de mesure des textes. `git diff --check` passe également ; ces contrôles ne remplacent pas les essais de gestes. |
+| Contrôle            | Preuve et limite                                                                                                                                                                                                                                                                                                                                                                                |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Recherche et retour | La saisie de « Tambour » via le champ natif filtre la liste ; la sélection ouvre la fiche et la fermeture conserve la requête. La recherche « zzz » affiche zéro résultat et « Voir tous les groupes » ramène au catalogue. Le clavier logiciel n’a pas été obtenu par le contrôle de Simulator ; sa géométrie reste à tester.                                                                  |
+| Panneau             | Glissement physique du cran réduit au cran intermédiaire et actions accessibles de réduction/agrandissement exercés. Le cran est exposé dans l’arbre d’accessibilité ; aucune lecture parlée VoiceOver n’en est déduite.                                                                                                                                                                        |
+| Carte et fiche      | Le cadrage attend le retour du panneau au cran intermédiaire et laisse le groupe visible dans les rues de Pointe-à-Pitre. Le suivi live masque la contribution. La fiche Horizon sans position n’affiche aucun bouton Rejoindre ; seule la contribution est proposée.                                                                                                                           |
+| iPad                | Catalogue, filtre live avec deux résultats et fiche du groupe exercés dans le panneau latéral.                                                                                                                                                                                                                                                                                                  |
+| Navigation externe  | « Rejoindre ce point » ouvre Plans. La permission de localisation a été refusée ; le trajet complet, sa qualité et l’arrivée au groupe ne sont pas validés.                                                                                                                                                                                                                                     |
+| Thème et texte      | Captures natives clair/sombre. Le passage à chaud de la taille normale au texte maximal a révélé une mesure ancienne des textes ; la clé `fontScale` de `Label` et du texte de `Button` renouvelle cette mesure. La capture corrigée et l’accès au bouton après défilement ont été contrôlés, puis le retour à la taille normale sans relance : plus de caractères coupés et requête conservée. |
+| Contrôles code      | TypeScript, ESLint et les 37 tests mobiles passent après la correction de mesure des textes. `git diff --check` passe également ; ces contrôles ne remplacent pas les essais de gestes.                                                                                                                                                                                                         |
 
 Les captures sans retouche sont dans `../.impeccable/review/composition-a/` : `phone-detail.png`, `phone-dark.png`, `phone-detail-after-drag.png`, `ipad-catalog.png`, `ipad-detail.png`, `phone-large-text-fixed.png`, `phone-large-text-action.png`, `phone-no-position.png` et `phone-catalog.png`. `phone-large-text.png` conserve le défaut observé avant correction ; les variantes de diagnostic ne doivent pas être prises pour le résultat final.
 
@@ -88,7 +87,6 @@ Les captures sans retouche sont dans `../.impeccable/review/composition-a/` : `p
 **Revue de finition historique.** La revue locale `../.impeccable/review/composition-a/finish-review.md`, hors du lot versionné, rend un verdict `fix` : aucun défaut visuel matériel restant dans les captures examinées, mais la preuve du clavier logiciel et la clôture documentaire du comparateur restent ouvertes. Aucune reconstruction de la composition n’est demandée.
 
 **À vérifier séparément.** Clavier logiciel, lecture parlée VoiceOver, parcours Android, authentification réelle Google/Apple/e-mail et GPS sur le terrain. La validation humaine finale de la refonte reste distincte de ces contrôles du prototype.
-
 
 ## Ville en relief + bannières — intégration native du 14 octobre 2026
 
@@ -106,4 +104,4 @@ Le retour 2D→3D rétablit le relief et le libellé « Passer à la carte à pl
 
 Les 37 tests Expo et les 39 tests Convex passent lors de cette reprise. Le lint Convex conserve deux avertissements dans le code `_generated`, sans erreur. Metro sur 3186, Next/Auth sur 3185 et Convex sur 3210 ont été rétablis ; le feed local réutilise les mêmes cinq identifiants de groupes de démonstration et expire à 15 h 59, heure de Guadeloupe. Cette borne n’assure pas leur renouvellement après expiration.
 
-Le [rapport d’intégration](../.impeccable/review/ville-bannieres/implementation.md) rassemble le build, les simulateurs, les choix de rendu et les preuves. Les captures sélectionnées de ce dossier concernent MapLibre ; les diagnostics `first-pass-` et `diagnostic-`, ainsi que les captures de composition A, restent des archives locales hors du lot versionné. La refonte est consignée localement sur `develop` ; aucun push ni déploiement n’est effectué. Le glissement physique et le clavier logiciel n’ont pas été reconfirmés dans cette reprise. La lecture parlée VoiceOver, Android, le téléphone physique, l’authentification réelle et le GPS en sortie restent hors preuve.
+Le [rapport d’intégration](../.impeccable/review/ville-bannieres/implementation.md) rassemble le build, les simulateurs, les choix de rendu et les preuves. Les captures sélectionnées de ce dossier concernent MapLibre ; les diagnostics `first-pass-` et `diagnostic-`, ainsi que les captures de composition A, restent des archives locales hors du lot versionné. Cette recette native a précédé le push du 14 octobre sur `develop` (`012df08`) ; aucun déploiement applicatif ne découle de cette recette. Le glissement physique et le clavier logiciel n’ont pas été reconfirmés dans cette reprise. La lecture parlée VoiceOver, Android, le téléphone physique, l’authentification réelle et le GPS en sortie restent hors preuve.

@@ -1,4 +1,4 @@
-# Google, Apple et lien email — configuration O Mas La
+# Google, Apple et lien email — configuration Omasla
 
 Décision utilisateur du 13 octobre 2026. Le code est préparé ; aucune configuration réelle n’a été activée et aucun email réel n’a été envoyé par les tests.
 

@@ -28,8 +28,8 @@ import BottomSheet, {
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet"
 
-import type { PublicGroup } from "@oyo/convex"
-import { positionFreshness } from "@oyo/convex"
+import type { PublicGroup } from "@omasla/convex"
+import { positionFreshness } from "@omasla/convex"
 
 import DiscoveryHandle from "~/components/discovery-handle"
 import GroupDetailPanel from "~/components/group-detail-panel"
@@ -474,7 +474,7 @@ export default function Discovery() {
           maxFontSizeMultiplier={1.5}
           style={{ fontSize: 21, fontWeight: "700", letterSpacing: -0.4 }}
         >
-          O Mas La
+          Omasla
         </Label>
         {material(
           <Pressable

@@ -7,8 +7,8 @@ import "mapbox-gl/dist/mapbox-gl.css"
 
 import { useTheme } from "next-themes"
 
-import type { Id } from "@oyo/convex"
-import { positionFreshness } from "@oyo/convex"
+import type { Id } from "@omasla/convex"
+import { positionFreshness } from "@omasla/convex"
 
 import type { CatalogState } from "~/hooks/usePublicCatalog"
 import { env } from "~/env"

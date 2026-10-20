@@ -2,7 +2,7 @@ import type { ConfigContext, ExpoConfig } from "expo/config"
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: "O Mas La ?",
+  name: "Omasla",
   slug: "omasla-app",
   owner: "marvinldotcom",
   scheme: "omasla",

@@ -7,9 +7,9 @@ import { DrizzleAdapter } from "@auth/drizzle-adapter"
 import Apple from "next-auth/providers/apple"
 import Google from "next-auth/providers/google"
 
-import { and, eq, lt, sql } from "@oyo/db"
-import { db } from "@oyo/db/client"
-import { Account, Session, User, VerificationToken } from "@oyo/db/schema"
+import { and, eq, lt, sql } from "@omasla/db"
+import { db } from "@omasla/db/client"
+import { Account, Session, User, VerificationToken } from "@omasla/db/schema"
 
 import { env } from "../env"
 import { allowEmailSend, emailProvider, normalizeEmail } from "./email"

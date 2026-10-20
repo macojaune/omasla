@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import type { Id, PublicCatalog } from "@oyo/convex"
+import type { Id, PublicCatalog } from "@omasla/convex"
 
 import type { TrackingRecord } from "./tracking-model"
 import {

@@ -13,8 +13,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import { useNetInfo } from "@react-native-community/netinfo"
 import { useConvex } from "convex/react"
 
-import type { PublicCatalog } from "@oyo/convex"
-import { api } from "@oyo/convex"
+import type { PublicCatalog } from "@omasla/convex"
+import { api } from "@omasla/convex"
 
 import type { CachedCatalog } from "./catalog-model"
 import { catalogTime, parseCachedCatalog } from "./catalog-model"

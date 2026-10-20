@@ -2,8 +2,8 @@ import { useEffect, useState } from "react"
 import { AppState } from "react-native"
 import { useConvexAuth, useQuery } from "convex/react"
 
-import type { Id, SessionView } from "@oyo/convex"
-import { api } from "@oyo/convex"
+import type { Id, SessionView } from "@omasla/convex"
+import { api } from "@omasla/convex"
 
 import type { StopReason, TrackingRecord } from "./background-location"
 import {

@@ -1,5 +1,5 @@
 ---
-name: "O Mas La — application native"
+name: "Omasla — application native"
 description: "Système visuel extrait de l’implémentation locale Expo / React Native."
 colors:
   background: "#F3F5F8"
@@ -218,13 +218,13 @@ components:
     width: "36px"
 ---
 
-# Design System: O Mas La — application native
+# Design System: Omasla — application native
 
 ## Overview
 
 **Creative North Star: "La carte reste le lieu"**
 
-O Mas La conserve le langage des applications natives de navigation et lui donne une identité de ville : fond vectoriel clair calcaire ou nocturne, volumes simples issus des hauteurs disponibles et bannières attachées aux positions des groupes. La composition A maintient la recherche et la fiche dans un seul panneau. Le bleu porte les actions de l’interface ; la bannière et son emblème portent l’identité du groupe, indépendamment de son statut.
+Omasla conserve le langage des applications natives de navigation et lui donne une identité de ville : fond vectoriel clair calcaire ou nocturne, volumes simples issus des hauteurs disponibles et bannières attachées aux positions des groupes. La composition A maintient la recherche et la fiche dans un seul panneau. Le bleu porte les actions de l’interface ; la bannière et son emblème portent l’identité du groupe, indépendamment de son statut.
 
 La densité reste fonctionnelle. Les intitulés français, la typographie du système et les symboles natifs portent l’interface. Le thème suit celui de l’appareil ; les surfaces iOS translucides deviennent opaques lorsque la réduction de transparence est activée.
 
@@ -296,7 +296,7 @@ Les couleurs de `groupIdentity` sont des données d’identité, pas une échell
 
 Le modèle natif conserve une scène cartographique et superpose les commandes dans les zones sûres. Les détails de cette première surface appartiennent à son brief ; ils ne prescrivent pas la composition de tous les écrans futurs.
 
-- Le nom discret O Mas La et le compte occupent le haut de la carte, avec une marge horizontale de 16 à `safeArea.top + 10`. Le compte occupe 56 × 56 et les commandes de carte 52 × 52. La recherche appartient au panneau ; elle garde une hauteur minimale de 56.
+- Le nom discret Omasla et le compte occupent le haut de la carte, avec une marge horizontale de 16 à `safeArea.top + 10`. Le compte occupe 56 × 56 et les commandes de carte 52 × 52. La recherche appartient au panneau ; elle garde une hauteur minimale de 56.
 - Sous une largeur logique de 700, le panneau possède trois arrêts. L’arrêt intermédiaire utilise `min(availableHeight × 0.6, panelHeight)`, avec `panelHeight` de 386 pour la liste et 350 pour la fiche ; sa hauteur ne croît pas avec `fontScale`, afin de réserver un espace réel à la carte. L’arrêt réduit est `min(112 + safeArea.bottom, availableHeight × 0.3)` ; seule la recherche reste accessible à ce cran, la liste ou la fiche étant masquée visuellement et pour les technologies d’assistance. L’arrêt haut vaut 100 % et permet la lecture étendue, y compris en texte agrandi. `availableHeight = max(120, height − (safeArea.top + 82) − keyboardInset)`.
 - À partir de 700, le panneau contenant la recherche occupe une colonne de 392, à 16 du bord gauche. Le panneau conserve un arrêt de 100 % dans son conteneur. La commande Agrandir/Réduire est absente de la liste dans ce mode ; la fermeture d’une fiche sélectionnée reste disponible. Le cadrage cartographique tient compte de cette colonne.
 - La recherche persistante précède la liste ou la fiche dans le même panneau, avec une marge horizontale de 20 et un espacement inférieur de 14. Le contenu défilant possède une marge horizontale de 24. Son bas ajoute la zone sûre à 24 pour la liste et à 30 pour la fiche.

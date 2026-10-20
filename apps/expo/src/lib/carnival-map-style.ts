@@ -46,9 +46,7 @@ export function createCarnivalMapStyle(
 
   return {
     version: 8,
-    name: dark
-      ? "O Mas La · Nuit à Pointe-à-Pitre"
-      : "O Mas La · Ville calcaire",
+    name: dark ? "Omasla · Nuit à Pointe-à-Pitre" : "Omasla · Ville calcaire",
     glyphs:
       "https://data.geopf.fr/annexes/ressources/vectorTiles/fonts/{fontstack}/{range}.pbf",
     sources: {

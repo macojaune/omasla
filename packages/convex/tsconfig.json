@@ -1,5 +1,5 @@
 {
-  "extends": "@oyo/tsconfig/internal-package.json",
+  "extends": "@omasla/tsconfig/internal-package.json",
   "compilerOptions": { "types": ["vite/client", "node"] },
   "include": ["*.ts", "src", "convex", "tests"],
   "exclude": ["node_modules"]

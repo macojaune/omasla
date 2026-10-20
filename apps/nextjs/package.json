@@ -1,5 +1,5 @@
 {
-  "name": "@oyo/nextjs",
+  "name": "@omasla/nextjs",
   "version": "1.5.0",
   "private": true,
   "type": "module",
@@ -14,11 +14,11 @@
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
-    "@oyo/api": "workspace:*",
-    "@oyo/auth": "workspace:*",
-    "@oyo/convex": "workspace:*",
-    "@oyo/db": "workspace:*",
-    "@oyo/ui": "workspace:*",
+    "@omasla/api": "workspace:*",
+    "@omasla/auth": "workspace:*",
+    "@omasla/convex": "workspace:*",
+    "@omasla/db": "workspace:*",
+    "@omasla/ui": "workspace:*",
     "@t3-oss/env-nextjs": "^0.11.1",
     "@tanstack/react-query": "catalog:",
     "@trpc/client": "catalog:",
@@ -40,10 +40,10 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@oyo/eslint-config": "workspace:*",
-    "@oyo/prettier-config": "workspace:*",
-    "@oyo/tailwind-config": "workspace:*",
-    "@oyo/tsconfig": "workspace:*",
+    "@omasla/eslint-config": "workspace:*",
+    "@omasla/prettier-config": "workspace:*",
+    "@omasla/tailwind-config": "workspace:*",
+    "@omasla/tsconfig": "workspace:*",
     "@types/node": "^22.13.0",
     "@types/react": "catalog:react19",
     "@types/react-dom": "catalog:react19",
@@ -54,5 +54,5 @@
     "tailwindcss": "catalog:",
     "typescript": "catalog:"
   },
-  "prettier": "@oyo/prettier-config"
+  "prettier": "@omasla/prettier-config"
 }

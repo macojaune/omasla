@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 
-import { publicJwks } from "@oyo/auth/tokens"
+import { publicJwks } from "@omasla/auth/tokens"
 
 export const runtime = "nodejs"
 

@@ -5,8 +5,8 @@ import * as TaskManager from "expo-task-manager"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { ConvexHttpClient } from "convex/browser"
 
-import type { SessionView } from "@oyo/convex"
-import { api } from "@oyo/convex"
+import type { SessionView } from "@omasla/convex"
+import { api } from "@omasla/convex"
 
 import type { StopReason, TrackingRecord } from "./tracking-model"
 import { fetchConvexAccessToken } from "~/utils/auth-client"
@@ -158,7 +158,7 @@ export async function runNativeLocation() {
     pausesUpdatesAutomatically: false,
     showsBackgroundLocationIndicator: true,
     foregroundService: {
-      notificationTitle: "O Mas La ? · suivi du groupe",
+      notificationTitle: "Omasla · suivi du groupe",
       notificationBody:
         "Votre position est partagée. Ouvrez l’app pour arrêter le suivi.",
       killServiceOnDestroy: true,

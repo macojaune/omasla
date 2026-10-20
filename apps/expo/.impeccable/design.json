@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "2026-10-14T08:12:39.772107+00:00",
-  "title": "Design System: O Mas La — application native",
+  "title": "Design System: Omasla — application native",
   "extensions": {
     "colorMeta": {
       "background": {
@@ -884,7 +884,7 @@
   ],
   "narrative": {
     "northStar": "La carte reste le lieu",
-    "overview": "O Mas La conserve le langage des applications natives de navigation et lui donne une identité de ville : fond vectoriel clair calcaire ou nocturne, volumes simples issus des hauteurs disponibles et bannières attachées aux positions des groupes. La composition A maintient la recherche et la fiche dans un seul panneau. Le bleu porte les actions de l’interface ; la bannière et son emblème portent l’identité du groupe, indépendamment de son statut.\n\nLa densité reste fonctionnelle. Les intitulés français, la typographie du système et les symboles natifs portent l’interface. Le thème suit celui de l’appareil ; les surfaces iOS translucides deviennent opaques lorsque la réduction de transparence est activée.",
+    "overview": "Omasla conserve le langage des applications natives de navigation et lui donne une identité de ville : fond vectoriel clair calcaire ou nocturne, volumes simples issus des hauteurs disponibles et bannières attachées aux positions des groupes. La composition A maintient la recherche et la fiche dans un seul panneau. Le bleu porte les actions de l’interface ; la bannière et son emblème portent l’identité du groupe, indépendamment de son statut.\n\nLa densité reste fonctionnelle. Les intitulés français, la typographie du système et les symboles natifs portent l’interface. Le thème suit celui de l’appareil ; les surfaces iOS translucides deviennent opaques lorsque la réduction de transparence est activée.",
     "keyCharacteristics": [
       "Carte vectorielle IGN personnalisée, volumes mesurés et panneaux conservant le contexte.",
       "Fond jour/nuit et couleurs d’identité séparées des statuts de position.",

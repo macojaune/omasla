@@ -10,7 +10,7 @@ Mode : Operate. Cible : src/app/index.tsx, components/group-map.tsx, components/
 
 **STORY** — Chercher un nom, repérer sa disponibilité, toucher le groupe, lire la source et l’âge du point, rejoindre ce point daté. La contribution se présente seulement hors live.
 
-**FIRST VIEWPORT** — Carte plein écran inclinée, avec bâtiments à hauteur disponible et bannières dont le pied reste au point GPS. Le passage à plat conserve le même fond et les mêmes repères. Nom O Mas La discret sous la zone sûre, compte à droite. Un seul panneau inférieur à trois hauteurs contient une recherche persistante puis la liste ou la fiche. Le cran intermédiaire de la fiche occupe environ le tiers inférieur, avec titre, source/âge et action principale visibles. Commandes de cadrage et localisation au-dessus du panneau, commande 2D/3D et attribution IGN accessibles. Sur tablette, panneau latéral compact. Geste signature : sélectionner un repère conserve la carte et transforme le contenu du panneau en fiche ; fermer retrouve la recherche.
+**FIRST VIEWPORT** — Carte plein écran inclinée, avec bâtiments à hauteur disponible et bannières dont le pied reste au point GPS. Le passage à plat conserve le même fond et les mêmes repères. Nom Omasla discret sous la zone sûre, compte à droite. Un seul panneau inférieur à trois hauteurs contient une recherche persistante puis la liste ou la fiche. Le cran intermédiaire de la fiche occupe environ le tiers inférieur, avec titre, source/âge et action principale visibles. Commandes de cadrage et localisation au-dessus du panneau, commande 2D/3D et attribution IGN accessibles. Sur tablette, panneau latéral compact. Geste signature : sélectionner un repère conserve la carte et transforme le contenu du panneau en fiche ; fermer retrouve la recherche.
 
 **FORM** — Canon natif de navigation explicitement demandé par Marvin, priorité sur le tirage bd3a83aa (index 3). La sobriété de Plans guidait la première composition ; la direction Ville en relief + bannières retenue ensuite remplace son fond générique. Composition A approuvée le 14 octobre 2026 après comparaison de trois maquettes ; construction guidée par `.impeccable/mocks/comparison-20261013/a.png`. Le fond et les repères suivent ensuite la deuxième [exploration cartographique](../explorations/map-personality-20261014/02-bannieres.png), dont le degré de détail reste illustratif. Aucun faux itinéraire interne, ETA ou distance.
 
@@ -34,11 +34,9 @@ Marvin retient **A — Recherche et fiche dans un seul panneau bas**. Cette déc
 
 Marvin trouve le rendu trop proche d’une application Maps classique et demande une exploration plus personnelle du fond et des groupes. L’approbation de la composition A demeure ; elle ne vaut pas approbation finale du langage Apple standard décrit plus haut. Trois maquettes et leur faisabilité sont conservées dans l’archive locale `explorations/map-personality-20261014/`, hors du lot versionné à l’exception de la direction retenue et de la preuve des données. Aucune nouvelle direction ni migration de moteur n’est approuvée à ce stade historique. Cette exploration n’a pas modifié le runtime.
 
-
 ## Direction retenue — Ville et bannières
 
 Marvin préfère la deuxième exploration, **Ville en relief + bannières**, avec une réserve explicite sur les données 3D disponibles en Guadeloupe. Les bannières sont retenues pour les repères. La composition A reste validée. La proposition intermédiaire d’associer le fond Atlas et les bannières ne constitue pas son choix. La ville détaillée de l’image reste illustrative ; son degré de relief doit être fondé sur les données et le rendu réellement disponibles. Les bannières doivent fonctionner également sur un fond plat. Le statut live reste indépendant des couleurs d’identité du groupe.
-
 
 ## Intégration locale autorisée — Ville en relief + bannières
 
@@ -49,7 +47,6 @@ Marvin demande l’intégration locale de cette direction. Ce choix remplace les
 - Les bannières complètes ont un cadre stable de 172 × 96, porté à 190 × 96 pour la sélection, et une plaque sur deux lignes : nom, puis statut et âge. Sous le zoom 16, les groupes non sélectionnés utilisent un drapeau de 44 × 64 sans plaque. Le décalage commun `[-10, 6]` ancre le pied au GPS dans les deux variantes. La sélection reprend la couleur du groupe ; la pastille de statut conserve son sens. Les libellés accessibles restent complets, y compris le titre natif `ViewAnnotation` sur iOS.
 - Les cinq identités dessinées en SVG sont réservées aux fixtures explicitement marquées `· démo`. Les autres groupes reçoivent un monogramme et une couleur stables issus de leur identifiant, en attendant leur identité réelle. L’emblème est partagé entre bannière, ligne et fiche.
 - Aucun raster de la maquette ne remplace la géographie. Les volumes représentent des hauteurs disponibles et non les détails architecturaux, matières, foule ou déplacements suggérés dans une image générée.
-
 
 ## État de l’intégration et de la preuve
 

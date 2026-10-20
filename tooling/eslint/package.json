@@ -1,5 +1,5 @@
 {
-  "name": "@oyo/eslint-config",
+  "name": "@omasla/eslint-config",
   "private": true,
   "version": "0.3.0",
   "type": "module",
@@ -24,12 +24,12 @@
     "typescript-eslint": "^8.15.0"
   },
   "devDependencies": {
-    "@oyo/prettier-config": "workspace:*",
-    "@oyo/tsconfig": "workspace:*",
+    "@omasla/prettier-config": "workspace:*",
+    "@omasla/tsconfig": "workspace:*",
     "@types/eslint__js": "8.42.3",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "typescript": "catalog:"
   },
-  "prettier": "@oyo/prettier-config"
+  "prettier": "@omasla/prettier-config"
 }

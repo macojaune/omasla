@@ -1,5 +1,5 @@
-import type { PublicCatalog, PublicGroup, PublicPosition } from "@oyo/convex"
-import { positionFreshness } from "@oyo/convex"
+import type { PublicCatalog, PublicGroup, PublicPosition } from "@omasla/convex"
+import { positionFreshness } from "@omasla/convex"
 
 export interface CachedCatalog {
   version: 1

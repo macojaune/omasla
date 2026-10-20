@@ -1,5 +1,5 @@
-import { auth, signIn, signOut } from "@oyo/auth"
-import { Button } from "@oyo/ui/button"
+import { auth, signIn, signOut } from "@omasla/auth"
+import { Button } from "@omasla/ui/button"
 
 export async function AuthShowcase() {
   const session = await auth()

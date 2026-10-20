@@ -1,4 +1,4 @@
-import type { Id } from "@oyo/convex"
+import type { Id } from "@omasla/convex"
 
 export type StopReason = "manual" | "gps_failed" | "logout"
 export interface TrackingRecord {

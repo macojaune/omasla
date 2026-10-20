@@ -12,7 +12,7 @@ import * as Crypto from "expo-crypto"
 import * as Location from "expo-location"
 import { useLocalSearchParams, useRouter } from "expo-router"
 
-import { api } from "@oyo/convex"
+import { api } from "@omasla/convex"
 
 import ScreenHeader from "~/components/screen-header"
 import { saveAuthReturn } from "~/lib/auth-return"

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useConvexConnectionState, useQuery } from "convex/react"
 
-import { api } from "@oyo/convex"
+import { api } from "@omasla/convex"
 
 export function usePublicCatalog() {
   const data = useQuery(api.catalog.list, {})

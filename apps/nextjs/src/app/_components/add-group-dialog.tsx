@@ -4,18 +4,18 @@ import { useState } from "react"
 import { useMutation, useQuery } from "convex/react"
 import { Loader2 } from "lucide-react"
 
-import type { Id } from "@oyo/convex"
-import { api } from "@oyo/convex"
-import { Button } from "@oyo/ui/button"
+import type { Id } from "@omasla/convex"
+import { api } from "@omasla/convex"
+import { Button } from "@omasla/ui/button"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@oyo/ui/dialog"
-import { Input } from "@oyo/ui/input"
-import { Label } from "@oyo/ui/label"
-import { toast } from "@oyo/ui/toast"
+} from "@omasla/ui/dialog"
+import { Input } from "@omasla/ui/input"
+import { Label } from "@omasla/ui/label"
+import { toast } from "@omasla/ui/toast"
 
 interface AddGroupDialogProps {
   isOpen: boolean
@@ -40,12 +40,14 @@ export function AddGroupDialog({
 
       return
     }
-    const groupExists = groups?.find((group) => group.title.toLowerCase() === title.trim().toLowerCase())
+    const groupExists = groups?.find(
+      (group) => group.title.toLowerCase() === title.trim().toLowerCase(),
+    )
     if (groupExists) {
       toast.error("Un groupe avec ce nom existe déjà")
       return
     }
-    
+
     setSubmitting(true)
     try {
       const id = await createGroup({ title: title.trim() })

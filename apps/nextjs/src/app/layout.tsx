@@ -3,9 +3,9 @@ import Script from "next/script"
 import { GeistMono } from "geist/font/mono"
 import { GeistSans } from "geist/font/sans"
 
-import { cn } from "@oyo/ui"
-import { ThemeProvider } from "@oyo/ui/theme"
-import { Toaster } from "@oyo/ui/toast"
+import { cn } from "@omasla/ui"
+import { ThemeProvider } from "@omasla/ui/theme"
+import { Toaster } from "@omasla/ui/toast"
 
 import { TRPCReactProvider } from "~/trpc/react"
 import { ConvexClientProvider } from "./convex-client-provider"
@@ -14,7 +14,7 @@ import "~/app/globals.css"
 
 import { env } from "~/env"
 
-const title = "O Mas la? - Trouve tes groupes de carnaval préférés sans effort"
+const title = "Omasla - Trouve tes groupes de carnaval préférés sans effort"
 const description =
   "La solution pour suivre tes groupes de caranaval préférés, fini les dimanches soirs à courir" +
   " inutilement dans Pointe-à-pitre"
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   openGraph: {
     title,
     description,
-    siteName: "O Mas La ?",
+    siteName: "Omasla",
     images: [{ url: `${metadataBase}/omasla-og-image.png` }],
   },
   twitter: {

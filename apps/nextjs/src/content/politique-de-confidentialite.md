@@ -1,4 +1,4 @@
-# Politique de confidentialité de O Mas La?
+# Politique de confidentialité de Omasla
 
 La présente Politique de confidentialité décrit la façon dont vos informations personnelles sont recueillies, utilisées et partagées lorsque vous vous rendesur omasla.fr (le « Site »)
 

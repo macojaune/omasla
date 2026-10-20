@@ -51,7 +51,7 @@ importers:
 
   .:
     devDependencies:
-      '@oyo/prettier-config':
+      '@omasla/prettier-config':
         specifier: workspace:*
         version: link:tooling/prettier
       '@turbo/gen':
@@ -76,16 +76,16 @@ importers:
         specifier: 0.41.3
         version: 0.41.3
     devDependencies:
-      '@oyo/eslint-config':
+      '@omasla/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@oyo/prettier-config':
+      '@omasla/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier
-      '@oyo/tailwind-config':
+      '@omasla/tailwind-config':
         specifier: workspace:*
         version: link:../../tooling/tailwind
-      '@oyo/tsconfig':
+      '@omasla/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
       '@types/node':
@@ -118,7 +118,7 @@ importers:
       '@maplibre/maplibre-react-native':
         specifier: 11.5.0
         version: 11.5.0(@types/geojson@7946.0.16)(@types/react@19.2.18)(expo@57.0.28)(react-native@0.86.3(@babel/core@7.29.7)(@react-native-community/cli@13.6.9(bufferutil@4.0.9))(@react-native/metro-config@0.86.3(@babel/core@7.29.7))(@types/react@19.2.18)(bufferutil@4.0.9)(react@19.2.3))(react@19.2.3)
-      '@oyo/convex':
+      '@omasla/convex':
         specifier: workspace:*
         version: link:../../packages/convex
       '@react-native-async-storage/async-storage':
@@ -233,13 +233,13 @@ importers:
       '@babel/runtime':
         specifier: ^7.26.0
         version: 7.26.0
-      '@oyo/eslint-config':
+      '@omasla/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@oyo/prettier-config':
+      '@omasla/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier
-      '@oyo/tsconfig':
+      '@omasla/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
       '@types/babel__core':
@@ -272,19 +272,19 @@ importers:
 
   apps/nextjs:
     dependencies:
-      '@oyo/api':
+      '@omasla/api':
         specifier: workspace:*
         version: link:../../packages/api
-      '@oyo/auth':
+      '@omasla/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@oyo/convex':
+      '@omasla/convex':
         specifier: workspace:*
         version: link:../../packages/convex
-      '@oyo/db':
+      '@omasla/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@oyo/ui':
+      '@omasla/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       '@t3-oss/env-nextjs':
@@ -345,16 +345,16 @@ importers:
         specifier: 'catalog:'
         version: 3.24.1
     devDependencies:
-      '@oyo/eslint-config':
+      '@omasla/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@oyo/prettier-config':
+      '@omasla/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier
-      '@oyo/tailwind-config':
+      '@omasla/tailwind-config':
         specifier: workspace:*
         version: link:../../tooling/tailwind
-      '@oyo/tsconfig':
+      '@omasla/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
       '@types/node':
@@ -387,10 +387,10 @@ importers:
 
   packages/api:
     dependencies:
-      '@oyo/auth':
+      '@omasla/auth':
         specifier: workspace:*
         version: link:../auth
-      '@oyo/db':
+      '@omasla/db':
         specifier: workspace:*
         version: link:../db
       '@trpc/server':
@@ -406,13 +406,13 @@ importers:
         specifier: 'catalog:'
         version: 3.24.1
     devDependencies:
-      '@oyo/eslint-config':
+      '@omasla/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@oyo/prettier-config':
+      '@omasla/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier
-      '@oyo/tsconfig':
+      '@omasla/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
       eslint:
@@ -433,7 +433,7 @@ importers:
       '@auth/drizzle-adapter':
         specifier: 1.11.3
         version: 1.11.3
-      '@oyo/db':
+      '@omasla/db':
         specifier: workspace:*
         version: link:../db
       '@t3-oss/env-nextjs':
@@ -461,13 +461,13 @@ importers:
         specifier: 'catalog:'
         version: 3.24.1
     devDependencies:
-      '@oyo/eslint-config':
+      '@omasla/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@oyo/prettier-config':
+      '@omasla/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier
-      '@oyo/tsconfig':
+      '@omasla/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
       eslint:
@@ -495,13 +495,13 @@ importers:
       '@edge-runtime/vm':
         specifier: 5.0.0
         version: 5.0.0
-      '@oyo/eslint-config':
+      '@omasla/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@oyo/prettier-config':
+      '@omasla/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier
-      '@oyo/tsconfig':
+      '@omasla/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
       convex-test:
@@ -544,13 +544,13 @@ importers:
         specifier: 'catalog:'
         version: 3.24.1
     devDependencies:
-      '@oyo/eslint-config':
+      '@omasla/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@oyo/prettier-config':
+      '@omasla/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier
-      '@oyo/tsconfig':
+      '@omasla/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
       dotenv-cli:
@@ -617,16 +617,16 @@ importers:
         specifier: ^2.5.4
         version: 2.6.0
     devDependencies:
-      '@oyo/eslint-config':
+      '@omasla/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@oyo/prettier-config':
+      '@omasla/prettier-config':
         specifier: workspace:*
         version: link:../../tooling/prettier
-      '@oyo/tailwind-config':
+      '@omasla/tailwind-config':
         specifier: workspace:*
         version: link:../../tooling/tailwind
-      '@oyo/tsconfig':
+      '@omasla/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
       '@types/react':
@@ -678,10 +678,10 @@ importers:
         specifier: ^8.15.0
         version: 8.19.1(eslint@9.17.0(jiti@2.4.2))(typescript@5.7.3)
     devDependencies:
-      '@oyo/prettier-config':
+      '@omasla/prettier-config':
         specifier: workspace:*
         version: link:../prettier
-      '@oyo/tsconfig':
+      '@omasla/tsconfig':
         specifier: workspace:*
         version: link:../typescript
       '@types/eslint__js':
@@ -711,7 +711,7 @@ importers:
         specifier: ^0.6.9
         version: 0.6.9(@ianvs/prettier-plugin-sort-imports@4.4.0(prettier@3.4.2))(prettier@3.4.2)
     devDependencies:
-      '@oyo/tsconfig':
+      '@omasla/tsconfig':
         specifier: workspace:*
         version: link:../typescript
       typescript:
@@ -730,13 +730,13 @@ importers:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@22.20.5)(typescript@5.7.3)))
     devDependencies:
-      '@oyo/eslint-config':
+      '@omasla/eslint-config':
         specifier: workspace:*
         version: link:../eslint
-      '@oyo/prettier-config':
+      '@omasla/prettier-config':
         specifier: workspace:*
         version: link:../prettier
-      '@oyo/tsconfig':
+      '@omasla/tsconfig':
         specifier: workspace:*
         version: link:../typescript
       eslint:

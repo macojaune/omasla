@@ -1,5 +1,5 @@
 {
-  "name": "@oyo/expo",
+  "name": "@omasla/expo",
   "version": "2.0.0",
   "private": true,
   "main": "index.ts",
@@ -21,7 +21,7 @@
     "@expo/metro-runtime": "~57.0.16",
     "@gorhom/bottom-sheet": "^5",
     "@maplibre/maplibre-react-native": "11.5.0",
-    "@oyo/convex": "workspace:*",
+    "@omasla/convex": "workspace:*",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/netinfo": "12.0.1",
     "convex": "1.46.0",
@@ -61,9 +61,9 @@
     "@babel/core": "^7.29.0",
     "@babel/preset-env": "^7.26.0",
     "@babel/runtime": "^7.26.0",
-    "@oyo/eslint-config": "workspace:*",
-    "@oyo/prettier-config": "workspace:*",
-    "@oyo/tsconfig": "workspace:*",
+    "@omasla/eslint-config": "workspace:*",
+    "@omasla/prettier-config": "workspace:*",
+    "@omasla/tsconfig": "workspace:*",
     "@types/babel__core": "^7.20.5",
     "@types/geojson": "7946.0.16",
     "@types/node": "^22.13.0",
@@ -74,5 +74,5 @@
     "typescript": "~6.0.3",
     "vitest": "3.2.7"
   },
-  "prettier": "@oyo/prettier-config"
+  "prettier": "@omasla/prettier-config"
 }

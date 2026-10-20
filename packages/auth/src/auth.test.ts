@@ -19,8 +19,8 @@ import {
   vi,
 } from "vitest"
 
-import type { db as AuthDatabase } from "@oyo/db/client"
-import { sql } from "@oyo/db"
+import type { db as AuthDatabase } from "@omasla/db/client"
+import { sql } from "@omasla/db"
 
 import type * as CallbackModule from "../../../apps/nextjs/src/app/api/auth/[...nextauth]/route"
 import type * as TokenRouteModule from "../../../apps/nextjs/src/app/api/auth/convex-token/route"
@@ -37,7 +37,7 @@ import {
 import { verifiedSession } from "./session-policy"
 
 const provider = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn() }))
-vi.mock("@oyo/auth", async () => {
+vi.mock("@omasla/auth", async () => {
   const config = await import("./config")
   return { ...config, handlers: { GET: provider.get, POST: provider.post } }
 })
@@ -67,7 +67,7 @@ beforeAll(async () => {
   vi.stubEnv("CONVEX_URL", "https://fixture.convex.cloud")
   const { privateKey } = await generateKeyPair("RS256", { extractable: true })
   vi.stubEnv("AUTH_JWT_PRIVATE_KEY", await exportPKCS8(privateKey))
-  db = (await import("@oyo/db/client")).db
+  db = (await import("@omasla/db/client")).db
   const migration = await readFile(
     new URL("../../db/drizzle/0000_majestic_surge.sql", import.meta.url),
     "utf8",

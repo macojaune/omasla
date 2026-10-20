@@ -2,9 +2,9 @@ import { cache } from "react"
 import { headers } from "next/headers"
 import { createHydrationHelpers } from "@trpc/react-query/rsc"
 
-import type { AppRouter } from "@oyo/api"
-import { createCaller, createTRPCContext } from "@oyo/api"
-import { auth } from "@oyo/auth"
+import type { AppRouter } from "@omasla/api"
+import { createCaller, createTRPCContext } from "@omasla/api"
+import { auth } from "@omasla/auth"
 
 import { createQueryClient } from "./query-client"
 

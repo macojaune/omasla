@@ -84,7 +84,7 @@ export function LoginForm({
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-6 px-6 py-12">
       <div className="space-y-2">
         <Link href="/map" className="text-sm underline">
-          O Mas La ?
+          Omasla
         </Link>
         <h1 className="text-3xl font-semibold">Se connecter</h1>
         <p className="text-sm text-muted-foreground">

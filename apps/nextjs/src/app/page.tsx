@@ -12,9 +12,9 @@ import {
 } from "lucide-react"
 import { useTheme } from "next-themes"
 
-import { Button } from "@oyo/ui/button"
-import { Card } from "@oyo/ui/card"
-import { ThemeToggle } from "@oyo/ui/theme"
+import { Button } from "@omasla/ui/button"
+import { Card } from "@omasla/ui/card"
+import { ThemeToggle } from "@omasla/ui/theme"
 
 export default function HomePage() {
   const { resolvedTheme } = useTheme()
@@ -39,7 +39,7 @@ export default function HomePage() {
         </div>
         <div className="relative z-10 mx-auto max-w-4xl px-4 text-center">
           <span className="mb-4 text-6xl font-bold text-white md:text-8xl">
-            O Mas La ?
+            Omasla
           </span>
           <h1 className="mb-6 text-5xl text-white md:text-7xl">
             Suivez votre carnaval en temps réel!
@@ -179,8 +179,8 @@ export default function HomePage() {
         <div className="container mx-auto flex h-full max-w-3xl flex-col items-center justify-center px-4 text-center">
           <h2 className="mb-4 text-4xl font-bold">Soutenez le projet</h2>
           <p className="mb-8 text-xl text-gray-500">
-            Devenez sponsor de O Mas La ? et contribuez à améliorer l'expérience
-            du carnaval pour tous. Votre soutien nous aidera à maintenir et
+            Devenez sponsor de Omasla et contribuez à améliorer l'expérience du
+            carnaval pour tous. Votre soutien nous aidera à maintenir et
             développer ce service gratuit.
           </p>
           {/* // Find the sponsorship section and update the benefits array */}
@@ -274,7 +274,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="mt-12 border-t border-gray-800 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 | O Mas La ? − Tous droits réservés.</p>
+            <p>&copy; 2024 | Omasla − Tous droits réservés.</p>
           </div>
         </div>
       </footer>

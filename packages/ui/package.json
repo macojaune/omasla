@@ -1,5 +1,5 @@
 {
-  "name": "@oyo/ui",
+  "name": "@omasla/ui",
   "private": true,
   "version": "0.1.1",
   "type": "module",
@@ -44,10 +44,10 @@
     "tailwind-merge": "^2.5.4"
   },
   "devDependencies": {
-    "@oyo/eslint-config": "workspace:*",
-    "@oyo/prettier-config": "workspace:*",
-    "@oyo/tailwind-config": "workspace:*",
-    "@oyo/tsconfig": "workspace:*",
+    "@omasla/eslint-config": "workspace:*",
+    "@omasla/prettier-config": "workspace:*",
+    "@omasla/tailwind-config": "workspace:*",
+    "@omasla/tsconfig": "workspace:*",
     "@types/react": "catalog:react19",
     "@types/react-dom": "catalog:react19",
     "eslint": "catalog:",
@@ -60,5 +60,5 @@
     "react": "catalog:react19",
     "zod": "catalog:"
   },
-  "prettier": "@oyo/prettier-config"
+  "prettier": "@omasla/prettier-config"
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import type { Doc, Id } from "@oyo/convex"
+import type { Doc, Id } from "@omasla/convex"
 
 export function GroupCombobox({
   groups,

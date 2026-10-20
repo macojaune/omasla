@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { MapPin } from "lucide-react"
 
-import { Button } from "@oyo/ui/button"
+import { Button } from "@omasla/ui/button"
 
 import type { CatalogState } from "~/hooks/usePublicCatalog"
 import { AddPositionDialog } from "./add-position-dialog"

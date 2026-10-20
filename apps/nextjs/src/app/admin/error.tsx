@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 
-import { Button } from "@oyo/ui/button"
+import { Button } from "@omasla/ui/button"
 
 export default function AdministrationError({ reset }: { reset: () => void }) {
   return (

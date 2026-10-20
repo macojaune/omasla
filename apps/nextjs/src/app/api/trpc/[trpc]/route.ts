@@ -1,7 +1,7 @@
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch"
 
-import { appRouter, createTRPCContext } from "@oyo/api"
-import { auth } from "@oyo/auth"
+import { appRouter, createTRPCContext } from "@omasla/api"
+import { auth } from "@omasla/auth"
 
 // export const runtime = "edge"
 

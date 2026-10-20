@@ -1,8 +1,8 @@
-import type { NextRequest} from "next/server"
+import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
 
-import { invalidateSessionToken } from "@oyo/auth"
-import { bearerSession } from "@oyo/auth/native"
+import { invalidateSessionToken } from "@omasla/auth"
+import { bearerSession } from "@omasla/auth/native"
 
 export const runtime = "nodejs"
 

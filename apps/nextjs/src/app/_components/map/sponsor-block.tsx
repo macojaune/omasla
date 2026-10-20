@@ -1,5 +1,5 @@
-import { Button } from "@oyo/ui/button"
-import { Card } from "@oyo/ui/card"
+import { Button } from "@omasla/ui/button"
+import { Card } from "@omasla/ui/card"
 
 export function SponsorBlock() {
   return (

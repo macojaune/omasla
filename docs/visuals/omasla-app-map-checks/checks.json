@@ -1,0 +1,102 @@
+{
+  "date": "2026-10-20",
+  "artifact": "../omasla-app-map.html",
+  "notes": [
+    "Captures html_preview du wireframe, pas de l’application native.",
+    "Fond de page sombre ajouté uniquement dans dark.png et mobile-dark.png pour rendre le fond transparent lisible.",
+    "Rendu autonome sans ressource distante ; 9 vues et 13 états contrôlés par le script embarqué.",
+    "Capture referent.png : durée maximale configurée ; état représenté par données fictives."
+  ],
+  "previews": [
+    {
+      "key": "desktop",
+      "previewBackdropOnly": false,
+      "width": 728,
+      "contentHeight": 1062,
+      "capturedHeight": 1062,
+      "consoleMessages": [
+        {
+          "level": "log",
+          "text": "{\"check\":\"omasla-app-map\",\"viewport\":728,\"views\":9,\"states\":13,\"interactions\":6,\"horizontalOverflow\":false,\"errors\":[],\"pass\":true}"
+        }
+      ],
+      "screenshot": {
+        "mimeType": "image/png",
+        "width": 728,
+        "height": 1062
+      }
+    },
+    {
+      "key": "mobile",
+      "previewBackdropOnly": false,
+      "width": 360,
+      "contentHeight": 1616,
+      "capturedHeight": 1616,
+      "consoleMessages": [
+        {
+          "level": "log",
+          "text": "{\"check\":\"omasla-app-map\",\"viewport\":360,\"views\":9,\"states\":13,\"interactions\":6,\"horizontalOverflow\":false,\"errors\":[],\"pass\":true}"
+        }
+      ],
+      "screenshot": {
+        "mimeType": "image/png",
+        "width": 360,
+        "height": 1616
+      }
+    },
+    {
+      "key": "dark",
+      "previewBackdropOnly": true,
+      "width": 728,
+      "contentHeight": 1062,
+      "capturedHeight": 1062,
+      "consoleMessages": [
+        {
+          "level": "log",
+          "text": "{\"check\":\"omasla-app-map\",\"viewport\":728,\"views\":9,\"states\":13,\"interactions\":6,\"horizontalOverflow\":false,\"errors\":[],\"pass\":true}"
+        }
+      ],
+      "screenshot": {
+        "mimeType": "image/png",
+        "width": 728,
+        "height": 1062
+      }
+    },
+    {
+      "key": "community",
+      "previewBackdropOnly": false,
+      "width": 728,
+      "contentHeight": 1062,
+      "capturedHeight": 1062,
+      "consoleMessages": [
+        {
+          "level": "log",
+          "text": "{\"check\":\"omasla-app-map\",\"viewport\":728,\"views\":9,\"states\":13,\"interactions\":6,\"horizontalOverflow\":false,\"errors\":[],\"pass\":true}"
+        }
+      ],
+      "screenshot": {
+        "mimeType": "image/png",
+        "width": 728,
+        "height": 1062
+      }
+    },
+    {
+      "key": "mobile-dark",
+      "previewBackdropOnly": true,
+      "width": 360,
+      "contentHeight": 1616,
+      "capturedHeight": 1616,
+      "consoleMessages": [
+        {
+          "level": "log",
+          "text": "{\"check\":\"omasla-app-map\",\"viewport\":360,\"views\":9,\"states\":13,\"interactions\":6,\"horizontalOverflow\":false,\"errors\":[],\"pass\":true}"
+        }
+      ],
+      "screenshot": {
+        "mimeType": "image/png",
+        "width": 360,
+        "height": 1616
+      }
+    }
+  ]
+}

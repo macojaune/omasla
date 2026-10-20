@@ -26,7 +26,7 @@ Claims :
 
 `GET /api/auth/jwks` expose uniquement la partie publique de la clé RSA (`n`, `e`, `kid`, `alg`, `use`, `kty`). `AUTH_JWT_PRIVATE_KEY` reste côté serveur. La configuration Convex utilise `customJwt`, RS256 et cette JWKS. Le principal métier utilise l'identité vérifiée par `ctx.auth`, puis des habilitations stockées côté serveur.
 
-Les clients web utilisent `@oyo/auth/convex-client` sous le `SessionProvider` Auth.js. Les clients Expo utilisent `NativeAuthProvider` et `ConvexProviderWithAuth`. Les tâches GPS demandent un JWT avec `fetchConvexAccessToken()` ; les requêtes privées ne déduisent jamais une identité depuis la position ou l'identifiant du téléphone.
+Les clients web utilisent `@omasla/auth/convex-client` sous le `SessionProvider` Auth.js. Les clients Expo utilisent `NativeAuthProvider` et `ConvexProviderWithAuth`. Les tâches GPS demandent un JWT avec `fetchConvexAccessToken()` ; les requêtes privées ne déduisent jamais une identité depuis la position ou l'identifiant du téléphone.
 
 ## Retour de connexion native
 

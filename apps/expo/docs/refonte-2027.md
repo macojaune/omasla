@@ -1,6 +1,6 @@
 # Socle mobile de la refonte 2027
 
-Travail local du 13 octobre 2026, dans la branche `refonte-2027`. Ces notes décrivent l’implémentation et ses limites de vérification, pas une validation de publication.
+Socle commencé le 13 octobre 2026 dans `refonte-2027`, intégré et poussé sur `develop` au commit `012df08` le 14 octobre. Cartographie et inventaire des écrans revérifiés le 20 octobre. Ces notes décrivent l’implémentation et ses limites de vérification, pas une validation de publication. Voir aussi [la vue d’ensemble du produit](../../../docs/app-overview-2026-10-20.md).
 
 ## Socle et compatibilité
 
@@ -26,7 +26,7 @@ La liste, la recherche sans accents, les fiches, la source et l’âge des posit
 
 Le cache ne contient que le catalogue public déjà reçu. Il préserve l’heure du serveur et celle de la réception, puis continue de vieillir lors des reprises hors ligne. Il ne précharge ni annuaire inexistant ni fonds cartographiques. L’absence d’un cache reste explicite. Les mutations utilisent un client HTTP authentifié après vérification réseau ; elles ne rejoignent pas la file hors ligne du client React Convex. Une déclaration n’est jamais automatiquement soumise après reconnexion.
 
-La carte native utilise Apple Maps sur iOS et Google Maps sur Android. Une clé Android restreinte pour le package et la signature du binaire est nécessaire dans `GOOGLE_MAPS_API_KEY`. Sans cette configuration, l’app affiche une indisponibilité explicite. L’aperçu web conserve les listes/fiches et un adaptateur qui indique que la carte se consulte dans l’app. Cet aperçu ne prouve donc pas le chargement des tuiles natives. Le produit mobile cible explicitement Expo / React Native sur iOS et Android.
+Depuis la refonte visuelle du 14 octobre, la carte native utilise MapLibre React Native 11.5.0 et les tuiles vectorielles Plan IGN sur iOS et Android. Le style jour/nuit, les bannières et les volumes des bâtiments sont propres à Omasla. Les volumes utilisent les hauteurs positives disponibles dans `bati_surf` ; ils ne représentent ni un modèle photoréaliste ni le relief du terrain. La carte mobile active ne nécessite pas de clé Google Maps ni de jeton Mapbox. Les anciens paramètres Google présents dans la configuration ne sont pas utilisés par ce composant. Le site Next.js utilise encore Mapbox GL JS ; l’aperçu web Expo conserve les listes/fiches et un adaptateur indiquant que la carte se consulte dans l’app. Cet aperçu ne prouve pas le chargement des tuiles natives. Voir [le comparatif cartographique](../../../docs/map-options-2026-10-20.md).
 
 Décision confirmée par Marvin le 13 octobre : déclarer un groupe hors live utilise la position actuelle du téléphone et l’heure du relevé fraîchement acquis. Le formulaire ne propose ni déplacement du point ni saisie d’heure. « Publier ma position actuelle » demande la permission au geste, puis acquiert un nouveau relevé ; la consultation publique conserve son absence de permission GPS. Un refus réversible permet de réessayer ; un refus définitif propose les réglages. Le retour des réglages ou de la connexion ne publie jamais automatiquement.
 
@@ -54,11 +54,11 @@ La cadence technique initiale (15 secondes / 10 mètres, haute précision) est p
 
 - `EXPO_PUBLIC_CONVEX_URL` : déploiement Convex exact visé. URL locale 3210 seulement pour le banc local isolé.
 - `EXPO_PUBLIC_API_URL` : origine HTTPS des comptes ; HTTP accepté uniquement en développement explicite. Aucun `localhost` implicite sur un téléphone.
-- `GOOGLE_MAPS_API_KEY` : clé de carte Android pour le binaire et sa signature.
+- Aucun jeton fournisseur n’est requis pour le fond IGN du composant MapLibre actuel. Respecter les attributions et les conditions du service IGN ; le téléchargement de zones hors ligne n’est pas implémenté.
 - `GOOGLE_SERVICES_JSON` reste facultatif et n’est pas une preuve d’accès à Firebase ou aux stores.
 - Les identifiants de bundle existants et le projet EAS existant sont conservés. `eas whoami` a répondu « Not logged in » le 13 octobre : propriété, accès, signatures, fiches et état des stores non vérifiés.
 
-Contrôles automatisés utiles : `pnpm --filter @oyo/expo typecheck`, `lint`, `test`, `expo install --check`, et `expo export --platform all`. L’export génère des bundles JS/Hermes, pas des exécutables natifs signés. Le test cache utilise des fixtures explicitement fictives et couvre les frontières de fraîcheur, la corruption, l’absence de politique, la navigation et les interruptions de sessions. La course d’une réponse GPS tardive, la déduplication des notifications de vitesse et de zone, le refus de permission et la confirmation de fin par réconciliation sont également testés.
+Contrôles automatisés utiles : `pnpm --filter @omasla/expo typecheck`, `lint`, `test`, `expo install --check`, et `expo export --platform all`. L’export génère des bundles JS/Hermes, pas des exécutables natifs signés. Le test cache utilise des fixtures explicitement fictives et couvre les frontières de fraîcheur, la corruption, l’absence de politique, la navigation et les interruptions de sessions. La course d’une réponse GPS tardive, la déduplication des notifications de vitesse et de zone, le refus de permission et la confirmation de fin par réconciliation sont également testés.
 
 Les tests du nouveau parcours de déclaration couvrent la permission au geste et son refus, le GPS ancien/futur, l’expiration de l’acquisition, le vieillissement pendant l’authentification, la perte de réseau, le passage en live et le retour d’une requête précédente. L’APK compilé au commit `fd14356` précède ce changement : il ne valide pas ce formulaire. La permission native, la précision réelle et le retour des réglages de ce nouveau parcours restent à exercer sur iPhone et Android.
 

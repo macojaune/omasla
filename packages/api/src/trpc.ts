@@ -10,9 +10,9 @@ import { initTRPC, TRPCError } from "@trpc/server"
 import superjson from "superjson"
 import { ZodError } from "zod"
 
-import type { Session } from "@oyo/auth"
-import { auth, validateToken } from "@oyo/auth"
-import { db } from "@oyo/db/client"
+import type { Session } from "@omasla/auth"
+import { auth, validateToken } from "@omasla/auth"
+import { db } from "@omasla/db/client"
 
 /**
  * Isomorphic Session getter for API requests

@@ -12,8 +12,8 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
 import { useConvexAuth, useQuery } from "convex/react"
 
-import type { Id, SessionView } from "@oyo/convex"
-import { api } from "@oyo/convex"
+import type { Id, SessionView } from "@omasla/convex"
+import { api } from "@omasla/convex"
 
 import ScreenHeader from "~/components/screen-header"
 import { saveAuthReturn } from "~/lib/auth-return"

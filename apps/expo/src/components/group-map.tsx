@@ -19,8 +19,8 @@ import {
   ViewAnnotation,
 } from "@maplibre/maplibre-react-native"
 
-import type { PublicCatalog, PublicGroup } from "@oyo/convex"
-import { positionFreshness } from "@oyo/convex"
+import type { PublicCatalog, PublicGroup } from "@omasla/convex"
+import { positionFreshness } from "@omasla/convex"
 
 import GroupBanner, { GROUP_BANNER_OFFSET } from "~/components/group-banner"
 import { createCarnivalMapStyle } from "~/lib/carnival-map-style"
