@@ -18,9 +18,8 @@ const title = "Omasla - Trouve tes groupes de carnaval préférés sans effort"
 const description =
   "La solution pour suivre tes groupes de caranaval préférés, fini les dimanches soirs à courir" +
   " inutilement dans Pointe-à-pitre"
-const metadataBase = new URL(
-  env.NODE_ENV === "production" ? "https://omasla.fr" : "http://localhost:3000",
-)
+const metadataBase = new URL(env.NEXT_PUBLIC_APP_URL)
+const socialImageUrl = new URL("/omasla-og-image.png", metadataBase).toString()
 
 export const metadata: Metadata = {
   metadataBase,
@@ -30,12 +29,12 @@ export const metadata: Metadata = {
     title,
     description,
     siteName: "Omasla",
-    images: [{ url: `${metadataBase}/omasla-og-image.png` }],
+    images: [{ url: socialImageUrl }],
   },
   twitter: {
     card: "summary_large_image",
     creator: "@macojaune",
-    images: [`${metadataBase}/omasla-og-image.png`],
+    images: [socialImageUrl],
   },
 }
 
