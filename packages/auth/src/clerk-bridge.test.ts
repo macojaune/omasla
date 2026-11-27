@@ -68,9 +68,7 @@ describe("Clerk session exchange", () => {
   it("requires a verified bearer from the configured instance", async () => {
     expect((await clerkConvexToken(request())).status).toBe(401)
     expect(verifyToken).not.toHaveBeenCalled()
-    verifyToken.mockRejectedValueOnce(
-      new Error("Invalid signature or authorized party"),
-    )
+    verifyToken.mockRejectedValueOnce(new Error("Invalid signature"))
     expect(
       (await clerkConvexToken(request("Bearer header.invalid.signature")))
         .status,
@@ -98,22 +96,42 @@ describe("Clerk session exchange", () => {
     expect(issueAccessToken).not.toHaveBeenCalled()
   })
 
-  it("issues a short lived authorization for the Clerk subject and session", async () => {
-    const response = await clerkConvexToken(request(bearer))
-    expect(response.status).toBe(200)
-    expect(response.headers.get("cache-control")).toBe("no-store")
-    expect(verifyToken).toHaveBeenCalledWith(sessionToken, {
-      secretKey: "sk_test_placeholder",
-      authorizedParties: [origin],
+  it("rejects a signed token from a different web origin", async () => {
+    verifyToken.mockResolvedValueOnce({
+      sub: active.userId,
+      sid: active.id,
+      iss: issuer,
+      azp: "https://other.example.test",
     })
-    expect(issueAccessToken).toHaveBeenCalledWith(
-      {
-        user: { id: "clerk:user_Valid", name: null },
-        expires: new Date(expires).toISOString(),
-      },
-      "clerk:sess_Valid",
-    )
+    expect((await clerkConvexToken(request(bearer))).status).toBe(401)
+    expect(getSession).not.toHaveBeenCalled()
   })
+
+  it.each([undefined, origin])(
+    "issues a short lived authorization with azp %s",
+    async (azp) => {
+      verifyToken.mockResolvedValueOnce({
+        sub: active.userId,
+        sid: active.id,
+        iss: issuer,
+        ...(azp ? { azp } : {}),
+      })
+      const response = await clerkConvexToken(request(bearer))
+      expect(response.status).toBe(200)
+      expect(response.headers.get("cache-control")).toBe("no-store")
+      expect(verifyToken).toHaveBeenCalledWith(sessionToken, {
+        secretKey: "sk_test_placeholder",
+        issuer,
+      })
+      expect(issueAccessToken).toHaveBeenCalledWith(
+        {
+          user: { id: "clerk:user_Valid", name: null },
+          expires: new Date(expires).toISOString(),
+        },
+        "clerk:sess_Valid",
+      )
+    },
+  )
 
   it("waits for Convex revocation before acknowledging logout", async () => {
     revokeConvexSession.mockRejectedValueOnce(new Error("Convex unavailable"))
