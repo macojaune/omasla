@@ -31,7 +31,9 @@ import { positionFreshness } from "@omasla/convex"
 
 import { Input } from "~/beui/components/input"
 import { Tabs, TabsList, TabsTrigger } from "~/beui/components/tabs"
-import DiscoveryHandle from "~/components/discovery-handle"
+import DiscoveryHandle, {
+  DISCOVERY_HANDLE_HEIGHT,
+} from "~/components/discovery-handle"
 import GroupDetailPanel from "~/components/group-detail-panel"
 import GroupEmblem from "~/components/group-emblem"
 import GroupMap from "~/components/group-map"
@@ -70,6 +72,7 @@ export default function Discovery() {
     params.groupId,
   )
   const [sheetIndex, setSheetIndex] = useState(1)
+  const [detailHeadingHeight, setDetailHeadingHeight] = useState(0)
   const [settledPanel, setSettledPanel] = useState<{
     index: number
     top: number
@@ -109,23 +112,27 @@ export default function Discovery() {
   }, [height, width])
   const panelPosition = useSharedValue(height - 350)
   const selected = catalog.data?.groups.find((group) => group.id === selectedId)
-  const panelHeight = selected ? 350 : 386
   const topInset = insets.top + 82
   const availableHeight = Math.max(120, height - topInset - keyboardInset)
-  const snapPoints = useMemo(
-    () =>
-      wide
-        ? ["100%"]
-        : [
-            Math.min(112 + insets.bottom, availableHeight * 0.3),
-            // Preserve the map at the middle detent. Large text can use the
-            // expanded list instead of squeezing the map into a thin strip.
-            Math.min(availableHeight * 0.6, panelHeight),
-            "100%",
-          ],
-    [wide, availableHeight, panelHeight, insets.bottom],
+  const compactHeight = Math.min(112 + insets.bottom, availableHeight - 32)
+  const listHeight = Math.max(
+    compactHeight + 24,
+    Math.min(availableHeight * 0.6, 386),
   )
-  const panelLayout = `${width}:${height}:${fontScale}:${keyboardInset}:${panelHeight}:${topInset}`
+  const detailHeight = Math.min(
+    availableHeight - 1,
+    Math.max(
+      compactHeight + 24,
+      Math.min(availableHeight * 0.6, 350),
+      detailHeadingHeight + DISCOVERY_HANDLE_HEIGHT + insets.bottom + 12,
+    ),
+  )
+  const middleHeight = selected ? detailHeight : listHeight
+  const snapPoints = useMemo(
+    () => (wide ? ["100%"] : [compactHeight, middleHeight, "100%"]),
+    [wide, compactHeight, middleHeight],
+  )
+  const panelLayout = `${width}:${height}:${fontScale}:${keyboardInset}:${compactHeight}:${middleHeight}:${topInset}`
   const activeSnapPoint = snapPoints[sheetIndex] ?? snapPoints[1]
   const occupiedMapBottom = wide
     ? insets.bottom + 20
@@ -326,61 +333,60 @@ export default function Discovery() {
       {children}
     </View>
   )
-  const header = (
-    <View style={{ gap: 16, paddingTop: 6, paddingBottom: selected ? 12 : 4 }}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-        {selected && <GroupEmblem group={selected} size={48} />}
-        <View style={{ flex: 1, gap: 4 }}>
-          <Label
-            accessibilityRole="header"
-            style={{
-              fontSize: selected ? 25 : 26,
-              lineHeight: 32,
-              letterSpacing: -0.6,
-              fontWeight: "700",
-            }}
-          >
-            {selected?.title.replace(/ · démo$/, "") ??
-              (search ? "Résultats" : largeText ? "Groupes" : "Les groupes")}
+  const heading = (
+    <View style={s.heading}>
+      {selected && <GroupEmblem group={selected} size={48} />}
+      <View style={{ flex: 1, gap: 4 }}>
+        <Label
+          accessibilityRole="header"
+          style={{
+            fontSize: selected ? 25 : 26,
+            lineHeight: 32,
+            letterSpacing: -0.6,
+            fontWeight: "700",
+          }}
+        >
+          {selected?.title.replace(/ · démo$/, "") ??
+            (search ? "Résultats" : largeText ? "Groupes" : "Les groupes")}
+        </Label>
+        {!selected && (!largeText || Boolean(search)) && (
+          <Label muted style={{ fontSize: 14, lineHeight: 20 }}>
+            {search
+              ? `${groups.length} groupe${groups.length > 1 ? "s" : ""} trouvé${groups.length > 1 ? "s" : ""}`
+              : "Retrouve-les sur la carte"}
           </Label>
-          {!selected && (!largeText || Boolean(search)) && (
-            <Label muted style={{ fontSize: 14, lineHeight: 20 }}>
-              {search
-                ? `${groups.length} groupe${groups.length > 1 ? "s" : ""} trouvé${groups.length > 1 ? "s" : ""}`
-                : "Retrouve-les sur la carte"}
-            </Label>
-          )}
-        </View>
-        {(Boolean(selected) || !wide) && (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={
-              selected
-                ? "Fermer la fiche du groupe"
-                : sheetIndex === 2
-                  ? "Réduire la liste"
-                  : "Agrandir la liste"
-            }
-            onPress={() =>
-              selected
-                ? closeSelection()
-                : sheet.current?.snapToIndex(
-                    wide ? 0 : sheetIndex === 2 ? 1 : 2,
-                  )
-            }
-            style={({ pressed }) => [
-              s.round,
-              { backgroundColor: c.background, opacity: pressed ? 0.65 : 1 },
-            ]}
-          >
-            <Icon
-              name={selected ? "close" : sheetIndex === 2 ? "down" : "list"}
-              color={c.muted}
-              size={selected ? 17 : 20}
-            />
-          </Pressable>
         )}
       </View>
+      {(Boolean(selected) || !wide) && (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={
+            selected ? "Fermer la fiche du groupe" : "Voir la carte"
+          }
+          onPress={() => {
+            if (selected) closeSelection()
+            else {
+              Keyboard.dismiss()
+              sheet.current?.snapToIndex(0)
+            }
+          }}
+          style={({ pressed }) => [
+            selected ? s.round : s.namedAction,
+            { backgroundColor: c.background, opacity: pressed ? 0.65 : 1 },
+          ]}
+        >
+          <Icon name={selected ? "close" : "map"} color={c.muted} size={17} />
+          {!selected && (
+            <Label maxFontSizeMultiplier={1.6} style={s.actionLabel}>
+              Carte
+            </Label>
+          )}
+        </Pressable>
+      )}
+    </View>
+  )
+  const notices = (
+    <>
       {catalog.offline && (
         <Notice tone="warning">
           Hors ligne
@@ -399,36 +405,40 @@ export default function Discovery() {
           </Label>
         </Notice>
       )}
-      {!selected && (
-        <Tabs
-          value={filter}
-          onValueChange={(value) => {
-            if (value !== "all" && value !== "live") return
-            setFilter(value)
-            sheet.current?.snapToIndex(wide ? 0 : 1)
-          }}
-        >
-          <TabsList className="bg-background">
-            <TabsTrigger value="all" className="min-h-11">
-              Tous les groupes
-            </TabsTrigger>
-            <TabsTrigger
-              value="live"
-              className="min-h-11"
-              accessibilityLabel="Groupes en direct"
-              icon={({ color, size }) => (
-                <Icon
-                  name="signal"
-                  color={String(color ?? c.muted)}
-                  size={size}
-                />
-              )}
-            >
-              En direct
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      )}
+    </>
+  )
+  const listHeader = (
+    <View style={s.listHeader}>
+      {heading}
+      {notices}
+      <Tabs
+        value={filter}
+        onValueChange={(value) => {
+          if (value !== "all" && value !== "live") return
+          setFilter(value)
+          sheet.current?.snapToIndex(wide ? 0 : 1)
+        }}
+      >
+        <TabsList className="bg-background">
+          <TabsTrigger value="all" className="min-h-11">
+            Tous les groupes
+          </TabsTrigger>
+          <TabsTrigger
+            value="live"
+            className="min-h-11"
+            accessibilityLabel="Groupes en direct"
+            icon={({ color, size }) => (
+              <Icon
+                name="signal"
+                color={String(color ?? c.muted)}
+                size={size}
+              />
+            )}
+          >
+            En direct
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
     </View>
   )
   return (
@@ -476,9 +486,12 @@ export default function Discovery() {
               Keyboard.dismiss()
               router.push("/account")
             }}
-            style={s.account}
+            style={s.namedAction}
           >
-            <Icon name="person" color={c.ink} size={29} />
+            <Icon name="person" color={c.ink} size={21} />
+            <Label maxFontSizeMultiplier={1.6} style={s.actionLabel}>
+              Mon espace
+            </Label>
           </Pressable>,
           { borderRadius: 28 },
         )}
@@ -639,41 +652,59 @@ export default function Discovery() {
             elevation: 12,
           }}
         >
-          <View style={s.searchContainer}>
-            <Input
-              ref={input}
-              value={search}
-              onChangeText={setSearch}
-              placeholder="Chercher un groupe"
-              placeholderTextColor={c.muted}
-              accessibilityLabel="Rechercher un groupe"
-              onFocus={beginSearch}
-              fieldHeight={56}
-              classNames={{ field: "bg-background", input: "min-w-0 ps-12" }}
-              leftIcon={<Icon name="search" color={c.muted} size={21} />}
-              rightIcon={
-                search ? (
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="Effacer la recherche"
-                    onPress={() => {
-                      setSearch("")
-                      input.current?.focus()
-                    }}
-                    style={s.searchAction}
-                  >
-                    <Icon name="close" color={c.muted} size={16} />
-                  </Pressable>
-                ) : undefined
-              }
-              returnKeyType="search"
-              autoCorrect={false}
-              onSubmitEditing={() => {
-                Keyboard.dismiss()
-                sheet.current?.snapToIndex(wide ? 0 : 1)
-              }}
-            />
-          </View>
+          {collapsed ? (
+            <View style={s.searchContainer}>
+              <Button
+                title="Groupes"
+                icon="list"
+                variant="secondary"
+                onPress={() => {
+                  if (selectedId) {
+                    listPanelIndex.current = 1
+                    closeSelection()
+                  } else {
+                    sheet.current?.snapToIndex(1)
+                  }
+                }}
+              />
+            </View>
+          ) : !selected ? (
+            <View style={s.searchContainer}>
+              <Input
+                ref={input}
+                value={search}
+                onChangeText={setSearch}
+                placeholder="Chercher un groupe"
+                placeholderTextColor={c.muted}
+                accessibilityLabel="Rechercher un groupe"
+                onFocus={beginSearch}
+                fieldHeight={56}
+                classNames={{ field: "bg-background", input: "min-w-0 ps-12" }}
+                leftIcon={<Icon name="search" color={c.muted} size={21} />}
+                rightIcon={
+                  search ? (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Effacer la recherche"
+                      onPress={() => {
+                        setSearch("")
+                        input.current?.focus()
+                      }}
+                      style={s.searchAction}
+                    >
+                      <Icon name="close" color={c.muted} size={16} />
+                    </Pressable>
+                  ) : undefined
+                }
+                returnKeyType="search"
+                autoCorrect={false}
+                onSubmitEditing={() => {
+                  Keyboard.dismiss()
+                  sheet.current?.snapToIndex(wide ? 0 : 1)
+                }}
+              />
+            </View>
+          ) : null}
           {selected && data ? (
             <BottomSheetScrollView
               style={{ opacity: collapsed ? 0 : 1 }}
@@ -688,20 +719,43 @@ export default function Discovery() {
                 paddingBottom: insets.bottom + 30,
               }}
             >
-              {header}
+              <View
+                onLayout={(event) =>
+                  setDetailHeadingHeight(
+                    Math.ceil(event.nativeEvent.layout.height),
+                  )
+                }
+                style={s.detailHeader}
+              >
+                {heading}
+                {!selected.live && (
+                  <>
+                    <Button
+                      title="Partager sa position ici"
+                      icon="pin"
+                      disabled={!selected.canObserve || !catalog.canWrite}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/observe",
+                          params: { groupId: selected.id },
+                        })
+                      }
+                    />
+                    {catalog.offline && (
+                      <Label muted style={s.contributionHint}>
+                        Reconnecte-toi pour partager une position.
+                      </Label>
+                    )}
+                  </>
+                )}
+              </View>
+              {notices}
               <GroupDetailPanel
                 key={selected.id}
                 group={selected}
                 catalog={data}
                 now={catalog.now}
                 offline={catalog.offline}
-                canWrite={catalog.canWrite}
-                onObserve={() =>
-                  router.push({
-                    pathname: "/observe",
-                    params: { groupId: selected.id },
-                  })
-                }
               />
             </BottomSheetScrollView>
           ) : (
@@ -729,7 +783,7 @@ export default function Discovery() {
               data={groups}
               keyExtractor={(group) => group.id}
               keyboardShouldPersistTaps="handled"
-              ListHeaderComponent={header}
+              ListHeaderComponent={listHeader}
               contentContainerStyle={{
                 paddingHorizontal: 24,
                 paddingBottom: insets.bottom + 24,
@@ -855,12 +909,19 @@ const s = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  account: {
-    width: 56,
-    height: 56,
-    justifyContent: "center",
+  namedAction: {
+    minHeight: 48,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    flexDirection: "row",
+    gap: 8,
     alignItems: "center",
   },
+  actionLabel: { fontSize: 14, lineHeight: 20, fontWeight: "600" },
+  heading: { flexDirection: "row", alignItems: "center", gap: 12 },
+  listHeader: { gap: 16, paddingTop: 6, paddingBottom: 4 },
+  detailHeader: { gap: 12, paddingTop: 6, paddingBottom: 16 },
+  contributionHint: { fontSize: 12, lineHeight: 18 },
   round: {
     width: 48,
     height: 48,
