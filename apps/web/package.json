@@ -14,6 +14,8 @@
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
+    "@clerk/backend": "3.33.1",
+    "@clerk/tanstack-react-start": "1.7.22",
     "@omasla/api": "workspace:*",
     "@omasla/auth": "workspace:*",
     "@omasla/convex": "workspace:*",

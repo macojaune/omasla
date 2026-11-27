@@ -41,6 +41,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     "@maplibre/maplibre-react-native",
     "expo-router",
+    ["@clerk/expo", { appleSignIn: false }],
     "expo-secure-store",
     [
       "expo-splash-screen",

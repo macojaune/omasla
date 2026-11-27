@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react"
 import { ConvexHttpClient } from "convex/browser"
 import { ConvexError } from "convex/values"
 import { Loader2 } from "lucide-react"
-import { getProviders, signIn, useSession } from "@omasla/auth/web-client"
 
+import { getProviders, signIn } from "@omasla/auth/web-client"
 import { api } from "@omasla/convex"
 import { Button } from "@omasla/ui/button"
 import {
@@ -20,6 +20,7 @@ import { Label } from "@omasla/ui/label"
 import { toast } from "@omasla/ui/toast"
 
 import type { CatalogState } from "~/hooks/usePublicCatalog"
+import { useBrowserAuth } from "~/auth/browser"
 import { env } from "~/env"
 import { useGeolocation } from "~/hooks/useGeolocation"
 
@@ -76,7 +77,7 @@ export function AddPositionDialog({
   onOpenChange: (open: boolean) => void
   catalog: CatalogState
 }) {
-  const { status } = useSession()
+  const { status, accessToken } = useBrowserAuth()
   const {
     error: locationError,
     isLocating,
@@ -121,6 +122,10 @@ export function AddPositionDialog({
         draftKey,
         JSON.stringify({ groupId: selectedGroup }),
       )
+      if (env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
+        await signIn(undefined, { redirectTo: "/map?declaration=1" })
+        return
+      }
       const providers = await getProviders()
       if (Object.keys(providers).length === 0) {
         setError(
@@ -150,19 +155,11 @@ export function AddPositionDialog({
     const currentAttempt = ++attempt.current
     setSubmitting(true)
     try {
-      const auth = await fetch("/api/auth/convex-token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: "{}",
-        credentials: "same-origin",
-        cache: "no-store",
-      })
-      if (!auth.ok) throw new Error("Session invalid")
-      const body = (await auth.json()) as { token?: unknown }
-      if (typeof body.token !== "string") throw new Error("Session invalid")
+      const token = await accessToken()
+      if (!token) throw new Error("Session invalid")
       if (!networkAvailable() || currentAttempt !== attempt.current) return
       const client = new ConvexHttpClient(env.NEXT_PUBLIC_CONVEX_URL)
-      client.setAuth(body.token)
+      client.setAuth(token)
       if (request.current?.groupId !== selected.id)
         request.current = { groupId: selected.id, id: crypto.randomUUID() }
       const requestId = request.current.id

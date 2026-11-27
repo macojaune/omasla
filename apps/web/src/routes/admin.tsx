@@ -1,9 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import { useSession } from "@omasla/auth/web-client"
-
 import AdminError from "~/app/admin/error"
 import { OperationsConsole } from "~/app/admin/operations-console"
+import { useBrowserAuth } from "~/auth/browser"
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ name: "robots", content: "noindex, nofollow" }] }),
@@ -12,6 +11,6 @@ export const Route = createFileRoute("/admin")({
 })
 
 function AdministrationPage() {
-  const { status } = useSession()
+  const { status } = useBrowserAuth()
   return <OperationsConsole signedIn={status === "authenticated"} />
 }

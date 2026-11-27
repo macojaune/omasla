@@ -18,6 +18,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@clerk/expo": "4.17.7",
     "@expo/dom-webview": "~58.0.2",
     "@expo/metro-runtime": "~58.0.17",
     "@gorhom/bottom-sheet": "^5",
@@ -28,6 +29,7 @@
     "convex": "1.46.0",
     "expo": "~58.1.0",
     "expo-asset": "~58.0.21",
+    "expo-auth-session": "~58.0.20",
     "expo-blur": "~58.0.6",
     "expo-constants": "~58.0.16",
     "expo-crypto": "~58.0.9",
