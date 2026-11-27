@@ -17,11 +17,13 @@ async function clerkSession(request: Request) {
 
   const claims = await verifyToken(token, {
     secretKey: config.secretKey,
-    authorizedParties: [config.party],
+    issuer: config.issuer,
   }).catch(() => null)
+  // Clerk can omit azp on requests made by the native SDK without an Origin.
   if (
     !claims ||
     claims.iss !== config.issuer ||
+    (claims.azp !== undefined && claims.azp !== config.party) ||
     !/^user_[a-zA-Z0-9]+$/.test(claims.sub) ||
     typeof claims.sid !== "string" ||
     !/^sess_[a-zA-Z0-9]+$/.test(claims.sid)
