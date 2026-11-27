@@ -60,6 +60,10 @@ export function currentUser() {
 export async function fetchConvexAccessToken(options?: {
   forceRefreshToken?: boolean
 }): Promise<string | null> {
+  if (process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY) {
+    const { fetchClerkConvexToken } = await import("./clerk-client")
+    return fetchClerkConvexToken(options)
+  }
   if (logoutPending()) return null
   if (
     !options?.forceRefreshToken &&

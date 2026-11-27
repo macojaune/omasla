@@ -1,3 +1,4 @@
+import { SignIn } from "@clerk/tanstack-react-start"
 import { createFileRoute } from "@tanstack/react-router"
 
 import { LoginForm } from "~/app/login/login-form"
@@ -30,5 +31,15 @@ function LoginPage() {
       // Invalid destinations return to the public map.
     }
   }
+  if (env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
+    return (
+      <main className="grid min-h-dvh place-items-center px-6 py-12">
+        <SignIn
+          routing="hash"
+          forceRedirectUrl={callbackUrl}
+          signUpForceRedirectUrl={callbackUrl}
+        />
+      </main>
+    )
   return <LoginForm callbackUrl={callbackUrl} error={params.error} />
 }

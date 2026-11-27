@@ -1,12 +1,12 @@
-import { readCookie } from "@omasla/auth"
-
-import { validateToken } from "@omasla/auth"
+import { readCookie, validateToken } from "@omasla/auth"
 import { env } from "@omasla/auth/env"
 import { bearerSession } from "@omasla/auth/native"
 import { issueAccessToken } from "@omasla/auth/tokens"
 
+import { clerkConvexToken, clerkEnabled } from "../../../../auth/clerk.server"
 
 export async function POST(req: Request) {
+  if (clerkEnabled()) return clerkConvexToken(req)
   const authorization = req.headers.get("authorization")
   let token = bearerSession(authorization)
   if (!authorization) {

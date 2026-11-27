@@ -64,7 +64,7 @@ La CI exécute types, lint, tests, build Nitro, recette HTTP du serveur compilé
 
 ## Configuration restant à fournir
 
-- Connexion publique décidée : Google, Apple et e-mail par lien de connexion. Les identifiants fournisseurs et le transport Brevo doivent être configurés côté serveur ; aucun compte fournisseur n’a été créé ou modifié. Sans configuration, la consultation publique reste disponible. Voir la décision d’identité pour le contrat des callbacks et de l’e-mail.
+- Connexion Google en DEV via Clerk. Renseigner les deux clés publiques pour le web et Expo et la clé secrète côté serveur. Autoriser le retour `omasla://login` dans l’instance DEV du workspace `marvinl.com`. La configuration des autres fournisseurs reste à traiter. Voir [la décision d’identité](decisions/0002-clerk-pour-identite.md).
 - Cartographie : MapLibre React Native et tuiles vectorielles Plan IGN pour l’app iOS/Android, avec style Omasla et bâtiments extrudés selon les hauteurs disponibles. Aucun jeton Mapbox ou clé Google n’est requis pour ce composant. Le site web utilise toujours Mapbox et conserve un annuaire explicite sans token. Le cache du catalogue public ne télécharge pas le fond de carte hors ligne. Voir [les options de cartographie](map-options-2026-10-20.md).
 - Comptes Apple/Google/EAS et autorisations de publication. Une session CLI EAS connectée, des identifiants de signature et des appareils sont nécessaires pour les builds terrain.
 - Habilitations des référents et de l’équipe : les modérateurs et administrateurs habilitent/révoquent les référents, règlent le suivi, arrêtent les lives et retirent les observations. L’attribution des rôles de l’équipe reste réservée aux administrateurs.

@@ -7,10 +7,10 @@ import { ConvexHttpClient } from "convex/browser"
 import { useConvexAuth, useConvexConnectionState, useQuery } from "convex/react"
 
 import type { Id, TrackingPolicy } from "@omasla/convex"
-import { safeSignOut } from "@omasla/auth/convex-client"
 import { api } from "@omasla/convex"
 import { Button } from "@omasla/ui/button"
 
+import { useBrowserAuth } from "~/auth/browser"
 import { env } from "~/env"
 
 const field = "min-w-0 w-full rounded-md border bg-background px-3 py-2 text-sm"
@@ -22,20 +22,14 @@ const age = (value: number, now: number) => {
   return `${Math.floor(seconds / 3600)} h`
 }
 
-async function authorizedClient() {
+async function authorizedClient(accessToken: () => Promise<string | null>) {
   if (!navigator.onLine)
     throw new Error("Reconnecte-toi avant d’effectuer cette action.")
-  const response = await fetch("/api/auth/convex-token", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: "{}",
-    cache: "no-store",
-  })
-  if (!response.ok)
+  const token = await accessToken()
+  if (!token)
     throw new Error("La connexion a expiré. Reconnecte-toi pour continuer.")
-  const result = (await response.json()) as { token: string }
   const client = new ConvexHttpClient(env.NEXT_PUBLIC_CONVEX_URL)
-  client.setAuth(result.token)
+  client.setAuth(token)
   return client
 }
 
@@ -50,13 +44,14 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 
 export function OperationsConsole({ signedIn }: { signedIn: boolean }) {
   const { isAuthenticated, isLoading } = useConvexAuth()
+  const { accessToken, signOut } = useBrowserAuth()
   const [error, setError] = useState("")
   const [initialized, setInitialized] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
   useEffect(() => {
     if (!isAuthenticated) return
     let active = true
-    void authorizedClient()
+    void authorizedClient(accessToken)
       .then((client) => client.mutation(api.accounts.ensure, {}))
       .then(() => {
         if (active) setInitialized(true)
@@ -70,7 +65,7 @@ export function OperationsConsole({ signedIn }: { signedIn: boolean }) {
     return () => {
       active = false
     }
-  }, [isAuthenticated])
+  }, [accessToken, isAuthenticated])
   const account = useQuery(
     api.accounts.me,
     isAuthenticated && initialized ? {} : "skip",
@@ -93,7 +88,7 @@ export function OperationsConsole({ signedIn }: { signedIn: boolean }) {
             disabled={loggingOut}
             onClick={() => {
               setLoggingOut(true)
-              void safeSignOut("/map").catch(() => {
+              void signOut().catch(() => {
                 setError(
                   "Déconnexion non confirmée. Rétablis la connexion puis réessaie.",
                 )
@@ -114,7 +109,15 @@ export function OperationsConsole({ signedIn }: { signedIn: boolean }) {
         <Section title="Connexion requise">
           <p>Cet espace est réservé aux personnes habilitées.</p>
           <Button asChild>
-            <a href="/api/auth/signin?callbackUrl=/admin">Se connecter</a>
+            <a
+              href={
+                env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+                  ? "/login?callbackUrl=/admin"
+                  : "/api/auth/signin?callbackUrl=/admin"
+              }
+            >
+              Se connecter
+            </a>
           </Button>
         </Section>
       ) : isLoading || !account ? (
@@ -142,6 +145,7 @@ function Console({
 }) {
   const connection = useConvexConnectionState()
   const lives = useQuery(api.administration.overview, {})
+  const { accessToken } = useBrowserAuth()
   const queue = useQuery(api.administration.moderationQueue, {})
   const [pending, setPending] = useState(false)
   const [notice, setNotice] = useState("")
@@ -160,7 +164,7 @@ function Console({
     setNotice("")
     setFailed(false)
     try {
-      await operation(await authorizedClient())
+      await operation(await authorizedClient(accessToken))
       setNotice(success)
     } catch {
       setNotice(

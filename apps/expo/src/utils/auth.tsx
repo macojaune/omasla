@@ -8,6 +8,13 @@ import {
   useState,
 } from "react"
 import { AppState, Linking } from "react-native"
+import {
+  ClerkProvider,
+  useAuth,
+  useUser as useClerkUser,
+  useSSO,
+} from "@clerk/expo"
+import { tokenCache } from "@clerk/expo/token-cache"
 import NetInfo from "@react-native-community/netinfo"
 
 import type { NativeUser } from "./auth-client"
@@ -18,6 +25,11 @@ import {
   nativeSignIn,
   nativeSignOut,
 } from "./auth-client"
+import {
+  clerkPublishableKey,
+  fetchClerkConvexToken,
+  signOutClerk,
+} from "./clerk-client"
 
 interface NativeAuthState {
   isLoading: boolean
@@ -33,7 +45,7 @@ interface NativeAuthState {
 
 const AuthContext = createContext<NativeAuthState | null>(null)
 
-export function NativeAuthProvider({ children }: PropsWithChildren) {
+function LegacyNativeAuth({ children }: PropsWithChildren) {
   const [user, setUser] = useState<NativeUser | null>(null)
   const [isLoading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -123,6 +135,49 @@ export function NativeAuthProvider({ children }: PropsWithChildren) {
     [isLoading, user, error, signIn, signOut, fetchAccessToken],
   )
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+function ClerkNativeAuth({ children }: PropsWithChildren) {
+  const { isLoaded, isSignedIn } = useAuth()
+  const { user } = useClerkUser()
+  const { startSSOFlow } = useSSO()
+  const signIn = useCallback(async () => {
+    const result = await startSSOFlow({
+      strategy: "oauth_google",
+      redirectUrl: "omasla://login",
+    })
+    if (result.authSessionResult?.type !== "success") return false
+    if (!result.createdSessionId || !result.setActive)
+      throw new Error("La connexion requiert une étape supplémentaire.")
+    await result.setActive({ session: result.createdSessionId })
+    return true
+  }, [startSSOFlow])
+  const value = useMemo<NativeAuthState>(
+    () => ({
+      isLoading: !isLoaded,
+      isAuthenticated: !!isSignedIn,
+      user: user ? { id: `clerk:${user.id}`, name: user.fullName } : null,
+      error: null,
+      signIn,
+      signOut: signOutClerk,
+      fetchAccessToken: fetchClerkConvexToken,
+    }),
+    [isLoaded, isSignedIn, signIn, user],
+  )
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+export function NativeAuthProvider({ children }: PropsWithChildren) {
+  if (clerkPublishableKey)
+    return (
+      <ClerkProvider
+        publishableKey={clerkPublishableKey}
+        tokenCache={tokenCache}
+      >
+        <ClerkNativeAuth>{children}</ClerkNativeAuth>
+      </ClerkProvider>
+    )
+  return <LegacyNativeAuth>{children}</LegacyNativeAuth>
 }
 
 export function useNativeAuth() {
