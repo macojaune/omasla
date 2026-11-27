@@ -1,6 +1,7 @@
-import { Pressable, StyleSheet, View } from "react-native"
+import { StyleSheet, View } from "react-native"
 import { useRouter } from "expo-router"
 
+import { ButtonRoot } from "~/beui/components/button/button"
 import { Icon, Label, usePalette } from "~/theme/ui"
 
 export default function ScreenHeader({ title }: { title: string }) {
@@ -12,19 +13,18 @@ export default function ScreenHeader({ title }: { title: string }) {
       <Label accessibilityRole="header" style={s.title}>
         {title}
       </Label>
-      <Pressable
-        accessibilityRole="button"
+      <ButtonRoot
+        variant="ghost"
+        size="icon"
+        pressScale={0.96}
         accessibilityLabel="Fermer"
         onPress={() =>
           router.canGoBack() ? router.back() : router.replace("/")
         }
-        style={({ pressed }) => [
-          s.close,
-          { backgroundColor: pressed ? c.line : c.background },
-        ]}
+        style={[s.close, { backgroundColor: c.background }]}
       >
         <Icon name="close" color={c.muted} size={19} />
-      </Pressable>
+      </ButtonRoot>
     </View>
   )
 }

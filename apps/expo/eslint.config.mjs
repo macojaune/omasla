@@ -4,7 +4,13 @@ import reactConfig from "@omasla/eslint-config/react"
 /** @type {import('typescript-eslint').Config} */
 export default [
   {
-    ignores: [".expo/**", "expo-plugins/**", "ios/**", "android/**"],
+    ignores: [
+      ".expo/**",
+      "expo-plugins/**",
+      "ios/**",
+      "android/**",
+      "src/beui/**",
+    ],
   },
   ...baseConfig,
   ...reactConfig,

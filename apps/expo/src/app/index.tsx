@@ -3,14 +3,12 @@ import type { TextInputInstance, ViewStyle } from "react-native"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   AccessibilityInfo,
-  ActivityIndicator,
   BackHandler,
   Keyboard,
   Linking,
   Platform,
   Pressable,
   StyleSheet,
-  TextInput,
   useWindowDimensions,
   View,
 } from "react-native"
@@ -31,6 +29,8 @@ import BottomSheet, {
 import type { PublicGroup } from "@omasla/convex"
 import { positionFreshness } from "@omasla/convex"
 
+import { Input } from "~/beui/components/input"
+import { Tabs, TabsList, TabsTrigger } from "~/beui/components/tabs"
 import DiscoveryHandle from "~/components/discovery-handle"
 import GroupDetailPanel from "~/components/group-detail-panel"
 import GroupEmblem from "~/components/group-emblem"
@@ -38,7 +38,14 @@ import GroupMap from "~/components/group-map"
 import GroupRow from "~/components/group-row"
 import { useCatalog } from "~/lib/catalog"
 import { normalizeSearch, visiblePosition } from "~/lib/catalog-model"
-import { Button, Icon, Label, Notice, usePalette } from "~/theme/ui"
+import {
+  Button,
+  Icon,
+  Label,
+  LoadingIndicator,
+  Notice,
+  usePalette,
+} from "~/theme/ui"
 
 export default function Discovery() {
   const c = usePalette()
@@ -393,49 +400,34 @@ export default function Discovery() {
         </Notice>
       )}
       {!selected && (
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-          {(["all", "live"] as const).map((value) => (
-            <Pressable
-              key={value}
-              accessibilityRole="button"
-              accessibilityState={{ selected: filter === value }}
-              accessibilityLabel={
-                value === "all" ? "Tous les groupes" : "Groupes en direct"
-              }
-              onPress={() => {
-                setFilter(value)
-                sheet.current?.snapToIndex(wide ? 0 : 1)
-              }}
-              style={({ pressed }) => [
-                s.filter,
-                {
-                  backgroundColor:
-                    filter === value ? c.primarySoft : c.background,
-                  opacity: pressed ? 0.65 : 1,
-                },
-              ]}
-            >
-              {value === "live" && (
+        <Tabs
+          value={filter}
+          onValueChange={(value) => {
+            if (value !== "all" && value !== "live") return
+            setFilter(value)
+            sheet.current?.snapToIndex(wide ? 0 : 1)
+          }}
+        >
+          <TabsList className="bg-background">
+            <TabsTrigger value="all" className="min-h-11">
+              Tous les groupes
+            </TabsTrigger>
+            <TabsTrigger
+              value="live"
+              className="min-h-11"
+              accessibilityLabel="Groupes en direct"
+              icon={({ color, size }) => (
                 <Icon
                   name="signal"
-                  color={filter === value ? c.primary : c.muted}
-                  size={16}
+                  color={String(color ?? c.muted)}
+                  size={size}
                 />
               )}
-              <Label
-                style={{
-                  flexShrink: 1,
-                  color: filter === value ? c.primary : c.muted,
-                  fontSize: 14,
-                  lineHeight: 20,
-                  fontWeight: "600",
-                }}
-              >
-                {value === "all" ? "Tous les groupes" : "En direct"}
-              </Label>
-            </Pressable>
-          ))}
-        </View>
+            >
+              En direct
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
       )}
     </View>
   )
@@ -555,7 +547,7 @@ export default function Discovery() {
               style={s.control}
             >
               {locating ? (
-                <ActivityIndicator color={c.primary} />
+                <LoadingIndicator />
               ) : (
                 <Icon
                   name="crosshair"
@@ -648,38 +640,39 @@ export default function Discovery() {
           }}
         >
           <View style={s.searchContainer}>
-            <View style={[s.search, { backgroundColor: c.background }]}>
-              <Icon name="search" color={c.muted} size={21} />
-              <TextInput
-                ref={input}
-                value={search}
-                onChangeText={setSearch}
-                placeholder="Chercher un groupe"
-                placeholderTextColor={c.muted}
-                accessibilityLabel="Rechercher un groupe"
-                onFocus={beginSearch}
-                style={[s.searchInput, { color: c.ink }]}
-                returnKeyType="search"
-                autoCorrect={false}
-                onSubmitEditing={() => {
-                  Keyboard.dismiss()
-                  sheet.current?.snapToIndex(wide ? 0 : 1)
-                }}
-              />
-              {search ? (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Effacer la recherche"
-                  onPress={() => {
-                    setSearch("")
-                    input.current?.focus()
-                  }}
-                  style={s.searchAction}
-                >
-                  <Icon name="close" color={c.muted} size={16} />
-                </Pressable>
-              ) : null}
-            </View>
+            <Input
+              ref={input}
+              value={search}
+              onChangeText={setSearch}
+              placeholder="Chercher un groupe"
+              placeholderTextColor={c.muted}
+              accessibilityLabel="Rechercher un groupe"
+              onFocus={beginSearch}
+              fieldHeight={56}
+              classNames={{ field: "bg-background", input: "min-w-0 ps-12" }}
+              leftIcon={<Icon name="search" color={c.muted} size={21} />}
+              rightIcon={
+                search ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Effacer la recherche"
+                    onPress={() => {
+                      setSearch("")
+                      input.current?.focus()
+                    }}
+                    style={s.searchAction}
+                  >
+                    <Icon name="close" color={c.muted} size={16} />
+                  </Pressable>
+                ) : undefined
+              }
+              returnKeyType="search"
+              autoCorrect={false}
+              onSubmitEditing={() => {
+                Keyboard.dismiss()
+                sheet.current?.snapToIndex(wide ? 0 : 1)
+              }}
+            />
           </View>
           {selected && data ? (
             <BottomSheetScrollView
@@ -855,23 +848,7 @@ const s = StyleSheet.create({
     shadowRadius: 14,
     elevation: 5,
   },
-  search: {
-    borderRadius: 20,
-    minHeight: 56,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingLeft: 17,
-    paddingRight: 8,
-    gap: 10,
-  },
   searchContainer: { paddingHorizontal: 20, paddingBottom: 14 },
-  searchInput: {
-    flex: 1,
-    minWidth: 0,
-    minHeight: 54,
-    fontSize: 16,
-    paddingVertical: 10,
-  },
   searchAction: {
     width: 44,
     height: 48,
@@ -899,17 +876,6 @@ const s = StyleSheet.create({
     height: 52,
     alignItems: "center",
     justifyContent: "center",
-  },
-  filter: {
-    maxWidth: "100%",
-    minHeight: 44,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 7,
-    borderRadius: 22,
   },
   sidebar: { position: "absolute", left: 16, width: 392 },
   locationError: { position: "absolute", gap: 6 },

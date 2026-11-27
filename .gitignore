@@ -45,6 +45,7 @@ yarn-error.log*
 .vercel
 
 # typescript
+/apps/expo/uniwind-types.d.ts
 dist/
 .cache
 .convex/
