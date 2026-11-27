@@ -181,6 +181,7 @@ export function Button({
       className="self-stretch"
       pressScale={0.975}
       testID={testID}
+      accessibilityLabel={title}
       accessibilityState={{ disabled: disabled || busy, busy }}
       disabled={disabled || busy}
       onPress={onPress}
