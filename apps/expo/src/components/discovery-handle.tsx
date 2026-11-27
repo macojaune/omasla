@@ -3,6 +3,8 @@ import { useBottomSheet } from "@gorhom/bottom-sheet"
 
 import { usePalette } from "~/theme/ui"
 
+export const DISCOVERY_HANDLE_HEIGHT = 28
+
 /** Native drag affordance with the same operation available to VoiceOver/TalkBack. */
 export default function DiscoveryHandle({ index }: { index: number }) {
   const c = usePalette()
@@ -33,7 +35,11 @@ export default function DiscoveryHandle({ index }: { index: number }) {
       }
       onPress={() => move(animatedIndex.get() >= 2 ? -1 : 1)}
       hitSlop={{ top: 8, bottom: 8, left: 0, right: 0 }}
-      style={{ height: 28, alignItems: "center", justifyContent: "center" }}
+      style={{
+        height: DISCOVERY_HANDLE_HEIGHT,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
     >
       <View
         style={{

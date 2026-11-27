@@ -19,15 +19,11 @@ export default function GroupDetailPanel({
   catalog,
   now,
   offline,
-  canWrite,
-  onObserve,
 }: {
   group: PublicGroup
   catalog: PublicCatalog
   now: number
   offline: boolean
-  canWrite: boolean
-  onObserve: () => void
 }) {
   const c = usePalette()
   const { fontScale } = useWindowDimensions()
@@ -88,7 +84,11 @@ export default function GroupDetailPanel({
       </Card>
       {point ? (
         <View style={{ gap: 10 }}>
-          <Button title="Rejoindre ce point" onPress={() => void navigate()} />
+          <Button
+            title="Rejoindre ce point"
+            variant={group.live ? "primary" : "secondary"}
+            onPress={() => void navigate()}
+          />
           <Label
             muted
             style={{ fontSize: 12, lineHeight: 18, textAlign: "center" }}
@@ -104,42 +104,15 @@ export default function GroupDetailPanel({
         </Notice>
       ) : null}
       {error && <Notice tone="error">{error}</Notice>}
-      <View
-        style={{
-          borderTopWidth: 0.5,
-          borderTopColor: c.line,
-          paddingTop: 18,
-          gap: 12,
-        }}
-      >
-        {group.live ? (
-          <View style={{ flexDirection: "row", gap: 10 }}>
-            <Icon name="info" color={c.muted} size={18} />
-            <Label muted style={{ fontSize: 13, lineHeight: 20, flex: 1 }}>
-              Le suivi du référent est actif. Les déclarations reprendront à la
-              fin du live.
-            </Label>
-          </View>
-        ) : (
-          <>
-            <Label style={{ fontSize: 17, fontWeight: "600" }}>
-              Le groupe est ici, avec toi ?
-            </Label>
-            <Button
-              title="Partager sa position ici"
-              icon="pin"
-              variant="secondary"
-              disabled={!group.canObserve || !canWrite}
-              onPress={onObserve}
-            />
-            <Label muted style={{ fontSize: 12, lineHeight: 18 }}>
-              {offline
-                ? "Reconnecte-toi pour partager une position."
-                : "Ta position actuelle et l’heure du relevé seront publiées."}
-            </Label>
-          </>
-        )}
-      </View>
+      {group.live && (
+        <View style={{ flexDirection: "row", gap: 10 }}>
+          <Icon name="info" color={c.muted} size={18} />
+          <Label muted style={{ fontSize: 13, lineHeight: 20, flex: 1 }}>
+            Le suivi du référent est actif. Les déclarations reprendront à la
+            fin du live.
+          </Label>
+        </View>
+      )}
     </View>
   )
 }
