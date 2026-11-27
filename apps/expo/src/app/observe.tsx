@@ -1,12 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import {
-  ActivityIndicator,
-  Linking,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native"
+import { Linking, Platform, ScrollView, StyleSheet, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import * as Crypto from "expo-crypto"
 import * as Location from "expo-location"
@@ -23,7 +16,15 @@ import {
   publishCurrentObservation,
 } from "~/lib/current-observation"
 import { authenticatedClient, friendlyError } from "~/lib/write-api"
-import { Button, Icon, Label, Notice, styles, usePalette } from "~/theme/ui"
+import {
+  Button,
+  Icon,
+  Label,
+  LoadingIndicator,
+  Notice,
+  styles,
+  usePalette,
+} from "~/theme/ui"
 import { useNativeAuth } from "~/utils/auth"
 
 const phaseLabels = {
@@ -257,7 +258,7 @@ export default function Observe() {
             </Label>
             {busy && (
               <View style={s.progress} accessibilityLiveRegion="polite">
-                <ActivityIndicator color={c.primary} />
+                <LoadingIndicator />
                 <Label muted style={[s.caption, { flex: 1 }]}>
                   {phaseLabels[phase]}
                 </Label>

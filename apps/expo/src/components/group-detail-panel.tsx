@@ -1,9 +1,11 @@
 import { useState } from "react"
-import { Linking, Platform, View } from "react-native"
+import { Linking, Platform, useWindowDimensions, View } from "react-native"
 
 import type { PublicCatalog, PublicGroup } from "@omasla/convex"
 import { positionFreshness } from "@omasla/convex"
 
+import { AnimatedBadge } from "~/beui/components/animated-badge"
+import { Card } from "~/beui/components/card"
 import {
   ageLabel,
   navigationUrl,
@@ -28,6 +30,7 @@ export default function GroupDetailPanel({
   onObserve: () => void
 }) {
   const c = usePalette()
+  const { fontScale } = useWindowDimensions()
   const [error, setError] = useState<string | null>(null)
   const point = visiblePosition(group, catalog, now)
   const freshness = positionFreshness(group.position, catalog.policy, now)
@@ -35,13 +38,13 @@ export default function GroupDetailPanel({
     freshness === "recent" &&
     group.live &&
     group.position?.source === "referent"
-  const tint = live
-    ? c.success
-    : freshness === "aging"
-      ? c.warning
-      : freshness === "recent"
-        ? c.success
-        : c.muted
+  const status =
+    freshness === "recent"
+      ? "success"
+      : freshness === "aging"
+        ? "warning"
+        : "neutral"
+  const label = positionLabel(group, catalog, now)
   const source =
     group.position?.source === "referent"
       ? "Référent GPS"
@@ -63,22 +66,26 @@ export default function GroupDetailPanel({
   }
   return (
     <View style={{ gap: 20, paddingTop: 2 }}>
-      <View style={{ gap: 10 }}>
-        <Label style={{ fontSize: 14, lineHeight: 21, color: c.muted }}>
-          <Label style={{ color: tint, fontWeight: "600" }}>
-            {positionLabel(group, catalog, now)}
+      <Card variant="muted" size="compact" style={{ gap: 8 }}>
+        {fontScale <= 1.2 ? (
+          <AnimatedBadge status={status} pulse={live}>
+            {label}
+          </AnimatedBadge>
+        ) : (
+          <Label style={{ fontWeight: "600" }}>{label}</Label>
+        )}
+        {group.position && (
+          <Label muted style={{ fontSize: 14, lineHeight: 21 }}>
+            {source} · {ageLabel(group.position, now)}
           </Label>
-          {group.position
-            ? ` · ${source} · ${ageLabel(group.position, now)}`
-            : ""}
-        </Label>
+        )}
         {!group.position && (
           <Label muted style={{ fontSize: 15, lineHeight: 22 }}>
             Aucune position partagée pour le moment. Le groupe reste dans
             l’annuaire.
           </Label>
         )}
-      </View>
+      </Card>
       {point ? (
         <View style={{ gap: 10 }}>
           <Button title="Rejoindre ce point" onPress={() => void navigate()} />

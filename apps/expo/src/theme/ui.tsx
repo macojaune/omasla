@@ -1,15 +1,16 @@
 import type { PropsWithChildren } from "react"
 import type { StyleProp, TextProps, ViewStyle } from "react-native"
 import {
-  ActivityIndicator,
-  Pressable,
   StyleSheet,
   Text,
   useColorScheme,
   useWindowDimensions,
-  View,
 } from "react-native"
 import { SymbolView } from "expo-symbols"
+
+import { Alert, AlertContent, AlertIcon } from "~/beui/components/alert"
+import { ButtonRoot } from "~/beui/components/button/button"
+import { Loader } from "~/beui/components/loader"
 
 const day = {
   isDark: false,
@@ -132,6 +133,24 @@ export function Label({
     </Text>
   )
 }
+export function LoadingIndicator({
+  color,
+  size = 24,
+}: {
+  color?: string
+  size?: number
+}) {
+  const c = usePalette()
+  return (
+    <Loader
+      variant="spinner"
+      label="Chargement en cours"
+      size={size}
+      color={color ?? c.primary}
+    />
+  )
+}
+
 export function Button({
   title,
   onPress,
@@ -158,30 +177,30 @@ export function Button({
         ? c.danger
         : c.ink
   return (
-    <Pressable
+    <ButtonRoot
+      className="self-stretch"
+      pressScale={0.975}
       testID={testID}
-      accessibilityRole="button"
       accessibilityState={{ disabled: disabled || busy, busy }}
       disabled={disabled || busy}
       onPress={onPress}
-      style={({ pressed }) => [
+      style={[
         styles.button,
         {
           backgroundColor: variant === "primary" ? c.primary : c.primarySoft,
           borderColor: variant === "primary" ? c.primary : c.line,
-          opacity: disabled || busy ? 0.5 : pressed ? 0.72 : 1,
         },
       ]}
     >
       {busy ? (
-        <ActivityIndicator size="small" color={color} />
+        <LoadingIndicator size={18} color={color} />
       ) : icon ? (
         <Icon name={icon} color={color} size={20} />
       ) : null}
       <Text key={fontScale} style={[styles.buttonText, { color }]}>
         {title}
       </Text>
-    </Pressable>
+    </ButtonRoot>
   )
 }
 export function Notice({
@@ -194,7 +213,14 @@ export function Notice({
 }>) {
   const c = usePalette()
   return (
-    <View
+    <Alert
+      variant={
+        tone === "error"
+          ? "destructive"
+          : tone === "warning"
+            ? "warning"
+            : "info"
+      }
       accessibilityLiveRegion="polite"
       style={[
         styles.notice,
@@ -202,21 +228,24 @@ export function Notice({
         style,
       ]}
     >
-      <Label
-        style={{
-          color:
-            tone === "warning"
-              ? c.warning
-              : tone === "error"
-                ? c.danger
-                : c.ink,
-          fontSize: 14,
-          lineHeight: 21,
-        }}
-      >
-        {children}
-      </Label>
-    </View>
+      <AlertIcon />
+      <AlertContent>
+        <Label
+          style={{
+            color:
+              tone === "warning"
+                ? c.warning
+                : tone === "error"
+                  ? c.danger
+                  : c.ink,
+            fontSize: 14,
+            lineHeight: 21,
+          }}
+        >
+          {children}
+        </Label>
+      </AlertContent>
+    </Alert>
   )
 }
 export const styles = StyleSheet.create({

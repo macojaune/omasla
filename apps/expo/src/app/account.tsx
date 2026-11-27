@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import {
-  ActivityIndicator,
   Linking,
   Platform,
   Pressable,
@@ -28,7 +27,15 @@ import {
 import { useCatalog } from "~/lib/catalog"
 import { useLocationHandler } from "~/lib/useLocation"
 import { authenticatedClient, friendlyError } from "~/lib/write-api"
-import { Button, Icon, Label, Notice, styles, usePalette } from "~/theme/ui"
+import {
+  Button,
+  Icon,
+  Label,
+  LoadingIndicator,
+  Notice,
+  styles,
+  usePalette,
+} from "~/theme/ui"
 import { useNativeAuth } from "~/utils/auth"
 
 const endLabels: Record<string, string> = {
@@ -292,7 +299,7 @@ export default function Account() {
           </View>
         )}
         {auth.isLoading ? (
-          <ActivityIndicator color={c.primary} />
+          <LoadingIndicator />
         ) : !auth.isAuthenticated ? (
           <>
             <View style={s.intro}>
@@ -355,7 +362,7 @@ export default function Account() {
                 vitesse écran verrouillé.
               </Label>
             </View>
-            {!tracking.mine && <ActivityIndicator color={c.primary} />}
+            {!tracking.mine && <LoadingIndicator />}
             {tracking.mine?.groups.length === 0 && (
               <Notice>
                 Vous n’êtes référent d’aucun groupe pour le moment. Vous pouvez

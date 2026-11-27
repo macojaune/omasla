@@ -1,11 +1,19 @@
 import { useEffect } from "react"
-import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native"
+import { ScrollView, StyleSheet, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
 
 import ScreenHeader from "~/components/screen-header"
 import { consumeAuthReturn } from "~/lib/auth-return"
-import { Button, Icon, Label, Notice, styles, usePalette } from "~/theme/ui"
+import {
+  Button,
+  Icon,
+  Label,
+  LoadingIndicator,
+  Notice,
+  styles,
+  usePalette,
+} from "~/theme/ui"
 import { useNativeAuth } from "~/utils/auth"
 
 // NativeAuthProvider consumes both WebBrowser callbacks and cold/warm deep links.
@@ -39,7 +47,7 @@ export default function LoginReturn() {
           <Notice tone="error">{auth.error}</Notice>
         ) : (
           <View style={s.progress} accessibilityLiveRegion="polite">
-            <ActivityIndicator color={c.primary} />
+            <LoadingIndicator />
             <Label muted style={s.caption}>
               Connexion en cours…
             </Label>
