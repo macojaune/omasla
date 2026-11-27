@@ -13,7 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      NEXT_TELEMETRY_DISABLED: "1"
       EXPO_NO_TELEMETRY: "1"
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +23,9 @@ jobs:
         run: pnpm --filter @omasla/db with-env drizzle-kit migrate
       - name: Types, lint, API and mobile contract tests
         run: pnpm check
-      - name: Build Next.js
-        run: pnpm --filter @omasla/nextjs build
+      - name: Build TanStack Start
+        run: pnpm --filter @omasla/web build
+      - name: Smoke test Nitro production build
+        run: node scripts/smoke-web-build.mjs
       - name: Export iOS, Android and web bundles
-        run: pnpm --filter @omasla/nextjs with-env pnpm --filter @omasla/expo export
+        run: pnpm --filter @omasla/web with-env pnpm --filter @omasla/expo export

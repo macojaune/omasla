@@ -7,7 +7,7 @@ La refonte visuelle commencée le 13 octobre 2026 dans `refonte-2027` a été in
 Le backend Convex local et Next/Auth doivent déjà tourner selon `../../../docs/development.md`. Depuis la racine du worktree :
 
 ```sh
-REACT_NATIVE_PACKAGER_HOSTNAME=localhost pnpm --filter @omasla/nextjs with-env pnpm --filter @omasla/expo dev --dev-client --localhost --port 3186 --max-workers 1
+REACT_NATIVE_PACKAGER_HOSTNAME=localhost pnpm --filter @omasla/web with-env pnpm --filter @omasla/expo dev --dev-client --localhost --port 3186 --max-workers 1
 ```
 
 Sur ce Mac, `--localhost` écoute sur `::1` tandis qu’Expo produit par défaut une URL de bundle `127.0.0.1`. La variable ci-dessus maintient le manifeste et son bundle sur `localhost`. `http://localhost:3186/status` doit répondre `packager-status:running`.

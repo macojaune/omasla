@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { safeSignOut } from "./convex-client"
 
-vi.mock("next-auth/react", () => ({
+vi.mock("./web-client", () => ({
   getCsrfToken: () => Promise.resolve("fixture-csrf"),
 }))
 const assign = vi.fn()

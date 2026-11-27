@@ -24,13 +24,13 @@ Pendant que le backend local tourne, dans un second terminal :
 pnpm --filter @omasla/convex exec convex env set AUTH_ISSUER_URL http://localhost:3185
 pnpm --filter @omasla/convex exec convex env set ALLOW_LOCAL_FIXTURES true
 pnpm --filter @omasla/convex exec convex env set BOOTSTRAP_ADMIN_SUBJECT simulation-admin
-pnpm --filter @omasla/nextjs dev
+pnpm --filter @omasla/web dev
 ```
 
 Dans un troisième terminal :
 
 ```sh
-pnpm --filter @omasla/nextjs with-env pnpm --filter @omasla/expo dev:web --port 3186
+pnpm --filter @omasla/web with-env pnpm --filter @omasla/expo dev:web --port 3186
 ```
 
 - `http://localhost:3185/map` : carte/annuaire web existant, raccordé au contrat public du socle.
@@ -38,11 +38,11 @@ pnpm --filter @omasla/nextjs with-env pnpm --filter @omasla/expo dev:web --port 
 - `http://localhost:3186` : aperçu web des écrans de l'app. La carte native et le suivi en arrière-plan se vérifient sur iOS/Android.
 - `http://127.0.0.1:3210` : backend Convex local. Le port 3211 sert ses actions HTTP.
 
-Ne pas copier le `.env` d'un autre checkout. Après une installation qui change les dépendances, redémarrer Metro/Next pour éviter un cache de résolution obsolète. Sur un téléphone physique, `localhost` désigne le téléphone : utiliser un environnement de développement joignable avec issuer HTTPS, certificat accepté et URLs identiques entre Auth.js, Convex et l'app.
+Ne pas copier le `.env` d'un autre checkout. Après une installation qui change les dépendances, redémarrer Metro/Vite pour éviter un cache de résolution obsolète. Sur un téléphone physique, `localhost` désigne le téléphone : utiliser un environnement de développement joignable avec issuer HTTPS, certificat accepté et URLs identiques entre Auth.js, Convex et l'app.
 
 ## Fixtures et preuves
 
-Avec Next et Convex démarrés :
+Avec TanStack Start et Convex démarrés :
 
 ```sh
 node packages/auth/scripts/smoke-local.mjs
@@ -55,16 +55,17 @@ Le scénario traverse les vrais endpoints HTTP, le JWT signé et la vérificatio
 ```sh
 pnpm check
 pnpm lint:ws
-pnpm --filter @omasla/nextjs build
-pnpm --filter @omasla/nextjs with-env pnpm --filter @omasla/expo export
+pnpm --filter @omasla/web build
+node scripts/smoke-web-build.mjs
+pnpm --filter @omasla/web with-env pnpm --filter @omasla/expo export
 ```
 
-La CI exécute types, lint, tests, build Next et exports iOS/Android/web avec sa configuration locale jetable. L'export Expo produit des bundles JS/Hermes ; il ne remplace pas la compilation native, la signature ou la validation en arrière-plan sur appareil.
+La CI exécute types, lint, tests, build Nitro, recette HTTP du serveur compilé et exports iOS/Android/web avec sa configuration locale jetable. L'export Expo produit des bundles JS/Hermes ; il ne remplace pas la compilation native, la signature ou la validation en arrière-plan sur appareil.
 
 ## Configuration restant à fournir
 
 - Connexion publique décidée : Google, Apple et e-mail par lien de connexion. Les identifiants fournisseurs et le transport Brevo doivent être configurés côté serveur ; aucun compte fournisseur n’a été créé ou modifié. Sans configuration, la consultation publique reste disponible. Voir la décision d’identité pour le contrat des callbacks et de l’e-mail.
-- Cartographie : MapLibre React Native et tuiles vectorielles Plan IGN pour l’app iOS/Android, avec style Omasla et bâtiments extrudés selon les hauteurs disponibles. Aucun jeton Mapbox ou clé Google n’est requis pour ce composant. Le site Next.js utilise toujours Mapbox et conserve un annuaire explicite sans token. Le cache du catalogue public ne télécharge pas le fond de carte hors ligne. Voir [les options de cartographie](map-options-2026-10-20.md).
+- Cartographie : MapLibre React Native et tuiles vectorielles Plan IGN pour l’app iOS/Android, avec style Omasla et bâtiments extrudés selon les hauteurs disponibles. Aucun jeton Mapbox ou clé Google n’est requis pour ce composant. Le site web utilise toujours Mapbox et conserve un annuaire explicite sans token. Le cache du catalogue public ne télécharge pas le fond de carte hors ligne. Voir [les options de cartographie](map-options-2026-10-20.md).
 - Comptes Apple/Google/EAS et autorisations de publication. Une session CLI EAS connectée, des identifiants de signature et des appareils sont nécessaires pour les builds terrain.
 - Habilitations des référents et de l’équipe : les modérateurs et administrateurs habilitent/révoquent les référents, règlent le suivi, arrêtent les lives et retirent les observations. L’attribution des rôles de l’équipe reste réservée aux administrateurs.
 - Seuils de fraîcheur, durée, rayon autour de Pointe-à-Pitre, précision et vitesse à mesurer sur le terrain. La politique de simulation n'est pas une recommandation opérationnelle.

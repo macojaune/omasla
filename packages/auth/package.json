@@ -4,15 +4,13 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": {
-      "react-server": "./src/index.rsc.ts",
-      "default": "./src/index.ts"
-    },
+    ".": "./src/index.ts",
     "./env": "./env.ts",
     "./native": "./src/native.ts",
     "./tokens": "./src/tokens.ts",
     "./request-context": "./src/request-context.ts",
-    "./convex-client": "./src/convex-client.tsx"
+    "./convex-client": "./src/convex-client.tsx",
+    "./web-client": "./src/web-client.tsx"
   },
   "license": "MIT",
   "scripts": {
@@ -26,11 +24,8 @@
     "@auth/core": "0.41.3",
     "@auth/drizzle-adapter": "1.11.3",
     "@omasla/db": "workspace:*",
-    "@t3-oss/env-nextjs": "^0.11.1",
     "convex": "1.46.0",
     "jose": "6.2.12",
-    "next": "16.4.0",
-    "next-auth": "5.0.0-beta.32",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
     "zod": "catalog:"

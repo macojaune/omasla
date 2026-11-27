@@ -1,5 +1,5 @@
 import type { BottomSheetFlatListMethods } from "@gorhom/bottom-sheet"
-import type { ViewStyle } from "react-native"
+import type { TextInputInstance, ViewStyle } from "react-native"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   AccessibilityInfo,
@@ -50,7 +50,7 @@ export default function Discovery() {
   const params = useLocalSearchParams<{ groupId?: string }>()
   const catalog = useCatalog()
   const sheet = useRef<BottomSheet>(null)
-  const input = useRef<TextInput>(null)
+  const input = useRef<TextInputInstance>(null)
   const groupList = useRef<BottomSheetFlatListMethods>(null)
   const savedListOffset = useRef(0)
   const restoreListOffset = useRef(false)
@@ -762,7 +762,7 @@ export default function Discovery() {
                     Tous les groupes sont référencés. Leur présence ici ne
                     garantit pas un suivi aujourd’hui.
                   </Label>
-                ) : null
+                ) : undefined
               }
               ListEmptyComponent={
                 <View style={{ gap: 14, paddingVertical: 28 }}>
