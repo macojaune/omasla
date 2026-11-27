@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback } from "react"
-import { getCsrfToken, useSession } from "next-auth/react"
+import { getCsrfToken, useSession } from "./web-client"
 
 export async function safeSignOut(redirectTo = "/map") {
   const target = new URL(redirectTo, window.location.origin)

@@ -1,7 +1,6 @@
 import { mkdtemp, readFile, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { NextRequest } from "next/server"
 import { ConvexHttpClient } from "convex/browser"
 import {
   createLocalJWKSet,
@@ -22,9 +21,9 @@ import {
 import type { db as AuthDatabase } from "@omasla/db/client"
 import { sql } from "@omasla/db"
 
-import type * as CallbackModule from "../../../apps/nextjs/src/app/api/auth/[...nextauth]/route"
-import type * as TokenRouteModule from "../../../apps/nextjs/src/app/api/auth/convex-token/route"
-import type * as ExchangeModule from "../../../apps/nextjs/src/app/api/auth/native/exchange/route"
+import type * as CallbackModule from "../../../apps/web/src/app/api/auth/[...nextauth]/route"
+import type * as TokenRouteModule from "../../../apps/web/src/app/api/auth/convex-token/route"
+import type * as ExchangeModule from "../../../apps/web/src/app/api/auth/native/exchange/route"
 import type * as AuthModule from "./config"
 import type * as NativeModule from "./native"
 import type * as TokenModule from "./tokens"
@@ -38,7 +37,7 @@ import { verifiedSession } from "./session-policy"
 
 const provider = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn() }))
 vi.mock("@omasla/auth", async () => {
-  const config = await import("./config")
+  const config = await vi.importActual<typeof import("./index")>("./index")
   return { ...config, handlers: { GET: provider.get, POST: provider.post } }
 })
 
@@ -90,13 +89,13 @@ beforeAll(async () => {
   tokens = await import("./tokens")
   auth = await import("./config")
   callback = await import(
-    "../../../apps/nextjs/src/app/api/auth/[...nextauth]/route"
+    "../../../apps/web/src/app/api/auth/[...nextauth]/route"
   )
   exchange = await import(
-    "../../../apps/nextjs/src/app/api/auth/native/exchange/route"
+    "../../../apps/web/src/app/api/auth/native/exchange/route"
   )
   tokenRoute = await import(
-    "../../../apps/nextjs/src/app/api/auth/convex-token/route"
+    "../../../apps/web/src/app/api/auth/convex-token/route"
   )
 })
 
@@ -131,7 +130,7 @@ async function grant() {
 }
 
 function callbackRequest(cookie?: string) {
-  return new NextRequest(
+  return new Request(
     "http://localhost:3000/api/auth/callback/discord?code=fixture-provider-code",
     { headers: cookie ? { Cookie: `omasla-native-auth=${cookie}` } : {} },
   )
@@ -161,7 +160,7 @@ it("completes Apple's form_post callback through the same secure native bridge",
     }),
   )
   const response = await callback.POST(
-    new NextRequest("http://localhost:3000/api/auth/callback/apple", {
+    new Request("http://localhost:3000/api/auth/callback/apple", {
       method: "POST",
       headers: {
         Cookie: `omasla-native-auth=${pending.id}`,
@@ -249,7 +248,7 @@ describe("PKCE database handoff", () => {
     const pending = await grant()
     await native.completeNativeGrant(pending.id, sessionToken)
     const response = await exchange.POST(
-      new NextRequest("http://localhost:3000/api/auth/native/exchange", {
+      new Request("http://localhost:3000/api/auth/native/exchange", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: pending.id, verifier }),
@@ -266,7 +265,7 @@ describe("PKCE database handoff", () => {
 describe("OAuth route boundary", () => {
   it("closes the legacy arbitrary-return bridge", async () => {
     const response = await callback.GET(
-      new NextRequest(
+      new Request(
         "http://localhost:3000/api/auth/signin?expo-redirect=https://evil.example",
       ),
       { params: Promise.resolve({ nextauth: ["signin"] }) },
@@ -276,7 +275,7 @@ describe("OAuth route boundary", () => {
   })
   it("rejects malicious native targets before touching OAuth", async () => {
     const response = await callback.GET(
-      new NextRequest(
+      new Request(
         "http://localhost:3000/api/auth/signin?native_redirect=https://evil.example",
       ),
       { params: Promise.resolve({ nextauth: ["signin"] }) },
@@ -334,7 +333,7 @@ describe("OAuth route boundary", () => {
 describe("signed Convex identity", () => {
   it("signs the verified account with audience/issuer/expiry and publishes no private key material", async () => {
     const response = await tokenRoute.POST(
-      new NextRequest("http://localhost:3000/api/auth/convex-token", {
+      new Request("http://localhost:3000/api/auth/convex-token", {
         method: "POST",
         headers: { Authorization: `Bearer ${sessionToken}` },
       }),
@@ -373,13 +372,13 @@ describe("signed Convex identity", () => {
   })
   it("refuses absent/unknown bearer and cross-origin cookie requests", async () => {
     const absent = await tokenRoute.POST(
-      new NextRequest("http://localhost:3000/api/auth/convex-token", {
+      new Request("http://localhost:3000/api/auth/convex-token", {
         method: "POST",
       }),
     )
     expect(absent.status).toBe(403)
     const invalid = await tokenRoute.POST(
-      new NextRequest("http://localhost:3000/api/auth/convex-token", {
+      new Request("http://localhost:3000/api/auth/convex-token", {
         method: "POST",
         headers: {
           Authorization: "Bearer unknown-session-12345678901234567890",
@@ -388,7 +387,7 @@ describe("signed Convex identity", () => {
     )
     expect(invalid.status).toBe(401)
     const foreign = await tokenRoute.POST(
-      new NextRequest("http://localhost:3000/api/auth/convex-token", {
+      new Request("http://localhost:3000/api/auth/convex-token", {
         method: "POST",
         headers: {
           Origin: "https://evil.example",
@@ -420,7 +419,7 @@ describe("web signout failure and retry", () => {
     const signed = await tokens.sessionId(
       `${csrf}fixture-auth-secret-at-least-32-characters`,
     )
-    return new NextRequest("http://localhost:3000/api/auth/signout", {
+    return new Request("http://localhost:3000/api/auth/signout", {
       method: "POST",
       headers: {
         Origin: origin,

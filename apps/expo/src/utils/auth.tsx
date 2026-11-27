@@ -47,7 +47,7 @@ export function NativeAuthProvider({ children }: PropsWithChildren) {
   )
   useEffect(() => {
     let mounted = true
-    const complete = async (url: string | null) => {
+    const complete = async (url: string | null | undefined) => {
       if (!url?.startsWith("omasla://login")) return
       if (mounted) {
         setLoading(true)

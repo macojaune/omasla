@@ -1,8 +1,6 @@
-import { createEnv } from "@t3-oss/env-nextjs"
 import { z } from "zod"
 
-export const env = createEnv({
-  server: {
+const schema = z.object({
     AUTH_GOOGLE_ID: z.string().min(1).optional(),
     AUTH_GOOGLE_SECRET: z.string().min(1).optional(),
     AUTH_APPLE_ID: z.string().min(1).optional(),
@@ -16,11 +14,11 @@ export const env = createEnv({
     AUTH_JWT_KEY_ID: z.string().min(1).optional(),
     CONVEX_URL: z.string().url().optional(),
     NODE_ENV: z.enum(["development", "production", "test"]).optional(),
-  },
-  client: {},
-  experimental__runtimeEnv: {},
-  emptyStringAsUndefined: true,
 })
+
+export const env = schema.parse(Object.fromEntries(
+  Object.entries(process.env).filter(([, value]) => value !== ""),
+))
 
 if (typeof window === "undefined") {
   const pairs = [

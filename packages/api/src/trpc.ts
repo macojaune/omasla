@@ -11,19 +11,14 @@ import superjson from "superjson"
 import { ZodError } from "zod"
 
 import type { Session } from "@omasla/auth"
-import { auth, validateToken } from "@omasla/auth"
+import { validateToken } from "@omasla/auth"
 import { db } from "@omasla/db/client"
 
 /**
  * Isomorphic Session getter for API requests
  * - Expo requests will have a session token in the Authorization header
- * - Next.js requests will have a session token in cookies
+ * - Web requests will have a session token in cookies
  */
-const isomorphicGetSession = async (headers: Headers) => {
-  const authToken = headers.get("Authorization") ?? null
-  if (authToken) return validateToken(authToken)
-  return auth()
-}
 
 /**
  * 1. CONTEXT
@@ -42,7 +37,7 @@ export const createTRPCContext = async (opts: {
   session: Session | null
 }) => {
   const authToken = opts.headers.get("Authorization") ?? null
-  const session = await isomorphicGetSession(opts.headers)
+  const session = authToken ? await validateToken(authToken) : opts.session
 
   return {
     session,

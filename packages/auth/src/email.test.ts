@@ -1,7 +1,6 @@
 import { mkdtemp, readFile, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { NextRequest } from "next/server"
 import {
   afterAll,
   beforeAll,
@@ -15,7 +14,7 @@ import {
 import type { db as AuthDatabase } from "@omasla/db/client"
 import { sql } from "@omasla/db"
 
-import type * as Routes from "../../../apps/nextjs/src/app/api/auth/[...nextauth]/route"
+import type * as Routes from "../../../apps/web/src/app/api/auth/[...nextauth]/route"
 import type * as Config from "./config"
 import type * as Email from "./email"
 import type * as Native from "./native"
@@ -56,7 +55,7 @@ beforeAll(async () => {
       await db.run(sql.raw(statement))
   }
   routes = await import(
-    "../../../apps/nextjs/src/app/api/auth/[...nextauth]/route"
+    "../../../apps/web/src/app/api/auth/[...nextauth]/route"
   )
   native = await import("./native")
   config = await import("./config")
@@ -87,7 +86,7 @@ afterAll(async () => {
 })
 
 function get(url: string, cookie = "") {
-  const request = new NextRequest(url, {
+  const request = new Request(url, {
     headers: cookie ? { Cookie: cookie } : {},
   })
   return routes.GET(request, {
@@ -109,7 +108,7 @@ async function requestLink(
   const csrf = await get(`${origin}/api/auth/csrf`)
   const { csrfToken } = (await csrf.json()) as { csrfToken: string }
   return routes.POST(
-    new NextRequest(`${origin}/api/auth/signin/email`, {
+    new Request(`${origin}/api/auth/signin/email`, {
       method: "POST",
       headers: {
         Origin: origin,
@@ -140,7 +139,7 @@ function deliveredLink() {
 describe("real Auth.js email flow with simulated Brevo transport", () => {
   it("pins production provider URLs to AUTH_URL despite forged request and forwarded hosts", async () => {
     const response = await routes.GET(
-      new NextRequest("https://evil.example/api/auth/providers", {
+      new Request("https://evil.example/api/auth/providers", {
         headers: {
           Host: "evil.example",
           "X-Forwarded-Host": "evil.example",
@@ -263,7 +262,7 @@ describe("real Auth.js email flow with simulated Brevo transport", () => {
   it("rejects CSRF and foreign origin before sending or storing a token", async () => {
     for (const requestOrigin of [origin, "https://evil.example"]) {
       const response = await routes.POST(
-        new NextRequest(`${origin}/api/auth/signin/email`, {
+        new Request(`${origin}/api/auth/signin/email`, {
           method: "POST",
           headers: {
             Origin: requestOrigin,

@@ -1,11 +1,11 @@
 import type {
   DefaultSession,
-  NextAuthConfig,
-  Session as NextAuthSession,
-} from "next-auth"
+  AuthConfig,
+  Session as AuthSession,
+} from "@auth/core/types"
 import { DrizzleAdapter } from "@auth/drizzle-adapter"
-import Apple from "next-auth/providers/apple"
-import Google from "next-auth/providers/google"
+import Apple from "@auth/core/providers/apple"
+import Google from "@auth/core/providers/google"
 
 import { and, eq, lt, sql } from "@omasla/db"
 import { db } from "@omasla/db/client"
@@ -18,7 +18,7 @@ import { authRequestContext } from "./request-context"
 import { verifiedSession } from "./session-policy"
 import { revokeConvexSession } from "./tokens"
 
-declare module "next-auth" {
+declare module "@auth/core/types" {
   interface Session {
     user: {
       id: string
@@ -96,6 +96,8 @@ export const authConfig = {
   // Auth.js rewrites HTTP and server-action origins from this validated AUTH_URL.
   // Never infer a production callback or email link from forwarded host headers.
   trustHost: !!env.AUTH_URL || env.NODE_ENV === "development",
+  basePath: "/api/auth",
+  useSecureCookies: isSecureContext,
   secret: env.AUTH_SECRET,
   pages: {
     signIn: "/login",
@@ -149,11 +151,11 @@ export const authConfig = {
       }
     },
   },
-} satisfies NextAuthConfig
+} satisfies AuthConfig
 
 export const validateToken = async (
   token: string,
-): Promise<NextAuthSession | null> => {
+): Promise<AuthSession | null> => {
   const session = await verifiedSession(token, async (sessionToken) =>
     adapter.getSessionAndUser?.(sessionToken),
   )

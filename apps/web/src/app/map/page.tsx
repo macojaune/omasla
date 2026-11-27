@@ -1,0 +1,58 @@
+"use client"
+
+import { lazy, Suspense, useState } from "react"
+import { ClientOnly } from "@tanstack/react-router"
+
+import type { Id } from "@omasla/convex"
+
+import { usePublicCatalog } from "~/hooks/usePublicCatalog"
+import { NavigationBar } from "../_components/map/navigation-bar"
+import { Sidebar } from "../_components/map/sidebar"
+
+const MapComponent = lazy(() => import("../_components/map/map-component"))
+
+function MapLoading() {
+  return (
+    <div className="flex h-full min-h-64 items-center justify-center bg-muted">
+      Chargement de la carte…
+    </div>
+  )
+}
+
+export default function MapPage() {
+  const [isSidebarOpen, setSidebarOpen] = useState(true)
+  const [selectedGroup, setSelectedGroup] = useState<Id<"groups"> | null>(null)
+  const catalog = usePublicCatalog()
+  const toggleSelectedGroup = (id: Id<"groups">) =>
+    setSelectedGroup((previous) => (previous !== id ? id : null))
+
+  return (
+    <div className="relative h-auto w-full lg:h-screen">
+      <NavigationBar toggleSidebar={() => setSidebarOpen(!isSidebarOpen)} />
+      <div className="flex h-[calc(100dvh-4rem)] flex-col lg:flex-row">
+        <div className="order-2 lg:order-1">
+          <Sidebar
+            isOpen={isSidebarOpen}
+            selectedGroup={selectedGroup}
+            onGroupSelect={toggleSelectedGroup}
+            catalog={catalog}
+          />
+        </div>
+        <main
+          className="relative order-1 min-h-[35dvh] flex-1 lg:order-2"
+          aria-label="Carte des groupes"
+        >
+          <ClientOnly fallback={<MapLoading />}>
+            <Suspense fallback={<MapLoading />}>
+              <MapComponent
+                selectedGroup={selectedGroup}
+                onGroupSelect={toggleSelectedGroup}
+                catalog={catalog}
+              />
+            </Suspense>
+          </ClientOnly>
+        </main>
+      </div>
+    </div>
+  )
+}

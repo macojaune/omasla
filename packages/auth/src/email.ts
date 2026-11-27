@@ -1,5 +1,5 @@
 import { createHmac } from "node:crypto"
-import type { EmailConfig } from "next-auth/providers/email"
+import type { EmailConfig } from "@auth/core/providers/email"
 import { z } from "zod"
 
 import { lt, sql } from "@omasla/db"

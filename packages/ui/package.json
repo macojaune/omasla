@@ -10,10 +10,7 @@
     },
     "./*": {
       "types": "./dist/src/*.d.ts",
-      "default": [
-        "./src/*.ts",
-        "./src/*.tsx"
-      ]
+      "default": "./src/*.tsx"
     }
   },
   "license": "MIT",
@@ -53,11 +50,13 @@
     "eslint": "catalog:",
     "prettier": "catalog:",
     "react": "catalog:react19",
+    "react-dom": "catalog:react19",
     "typescript": "catalog:",
     "zod": "catalog:"
   },
   "peerDependencies": {
     "react": "catalog:react19",
+    "react-dom": "catalog:react19",
     "zod": "catalog:"
   },
   "prettier": "@omasla/prettier-config"
