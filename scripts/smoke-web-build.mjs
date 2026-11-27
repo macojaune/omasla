@@ -1,5 +1,6 @@
 import assert from "node:assert/strict"
 import { spawn } from "node:child_process"
+import { once } from "node:events"
 import { setTimeout } from "node:timers/promises"
 import { fileURLToPath } from "node:url"
 
@@ -94,5 +95,15 @@ try {
   await request("/api/trpc/auth.getSession", 200)
   await request("/api/trpc/auth.getSecretMessage", 401)
 } finally {
-  server?.kill()
+  if (server && server.exitCode === null && server.signalCode === null) {
+    const exited = once(server, "exit")
+    server.kill()
+    // An SSR Convex client can keep the Node process alive after Nitro closes.
+    const deadline = globalThis.setTimeout(() => server.kill("SIGKILL"), 7_000)
+    try {
+      await exited
+    } finally {
+      clearTimeout(deadline)
+    }
+  }
 }
