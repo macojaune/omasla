@@ -1,9 +1,16 @@
 import { useEffect, useRef, useState } from "react"
 import { StyleSheet, View } from "react-native"
 
-import { saveAuthReturn } from "~/lib/auth-return"
+import type { SocialStrategy } from "~/lib/sign-in-options"
+import EmailCodeForm from "~/components/email-code-form"
+import { consumeAuthReturn, saveAuthReturn } from "~/lib/auth-return"
 import { useCatalog } from "~/lib/catalog"
-import { attemptSignIn, signInCopy } from "~/lib/sign-in-options"
+import {
+  attemptSignIn,
+  signInMethodsCaption,
+  socialCancelled,
+  webSignInCopy,
+} from "~/lib/sign-in-options"
 import {
   Button,
   Icon,
@@ -13,9 +20,6 @@ import {
   usePalette,
 } from "~/theme/ui"
 import { useNativeAuth } from "~/utils/auth"
-import { clerkPublishableKey } from "~/utils/clerk-client"
-
-const copy = signInCopy(clerkPublishableKey ? "clerk" : "web")
 
 /**
  * One sign-in block for every entry point (Moi, adding a position, the login
@@ -42,7 +46,8 @@ export default function SignInPanel({
   const catalog = useCatalog()
   const [state, setState] = useState<
     | { kind: "idle" }
-    | { kind: "opening" }
+    | { kind: "opening"; strategy?: SocialStrategy }
+    | { kind: "email" }
     | { kind: "cancelled" }
     | { kind: "failed"; message: string }
   >({ kind: "idle" })
@@ -53,12 +58,12 @@ export default function SignInPanel({
       mounted.current = false
     }
   }, [])
-  async function connect() {
+  async function connect(strategy?: SocialStrategy) {
     if (state.kind === "opening") return
-    setState({ kind: "opening" })
+    setState({ kind: "opening", strategy })
     const outcome = await attemptSignIn(async () => {
       if (!preserveReturn) await saveAuthReturn(returnGroupId)
-      return auth.signIn()
+      return auth.signIn(strategy)
     })
     if (!mounted.current) return
     setState(
@@ -69,10 +74,21 @@ export default function SignInPanel({
           : outcome,
     )
   }
+  function emailSignedIn() {
+    // The code is checked on this very screen: no browser, no deep link. It
+    // already shows the origin, so only drop a return saved by an earlier
+    // attempt; the login screen (preserveReturn) consumes and navigates itself.
+    if (!preserveReturn) void consumeAuthReturn().catch(() => undefined)
+    if (mounted.current) setState({ kind: "idle" })
+  }
   const opening = state.kind === "opening"
   const finishing = auth.isLoading && !opening
   const failure =
     state.kind === "failed" ? state.message : opening ? null : auth.error
+  const methods = auth.methods
+  const caption = methods
+    ? signInMethodsCaption(methods, auth.emailSignUp)
+    : webSignInCopy.methods
   return (
     <View style={s.panel}>
       <View style={s.intro}>
@@ -94,18 +110,55 @@ export default function SignInPanel({
           ))}
         </View>
       )}
-      <View style={s.actions}>
-        <Button
-          title={copy.button}
-          busy={opening || finishing}
-          disabled={!catalog.canWrite}
-          onPress={() => void connect()}
+      {state.kind === "email" && auth.emailCode ? (
+        <EmailCodeForm
+          flow={auth.emailCode}
+          canSend={catalog.canWrite}
+          onCancel={() => setState({ kind: "idle" })}
+          onSignedIn={emailSignedIn}
         />
-        <Label muted style={s.caption}>
-          {copy.methods} Ton compte est créé à ta première connexion ; rien
-          n’est publié sans ton geste.
-        </Label>
-      </View>
+      ) : (
+        <View style={s.actions}>
+          {methods ? (
+            methods.map((method) =>
+              method.kind === "social" ? (
+                <Button
+                  key={method.strategy}
+                  title={method.label}
+                  busy={
+                    finishing ||
+                    (opening &&
+                      (state.strategy ?? "oauth_google") === method.strategy)
+                  }
+                  disabled={!catalog.canWrite || opening}
+                  onPress={() => void connect(method.strategy)}
+                />
+              ) : (
+                <Button
+                  key="email"
+                  title={method.label}
+                  icon="mail"
+                  variant="secondary"
+                  disabled={
+                    !catalog.canWrite || opening || finishing || !auth.emailCode
+                  }
+                  onPress={() => setState({ kind: "email" })}
+                />
+              ),
+            )
+          ) : (
+            <Button
+              title={webSignInCopy.button}
+              busy={opening || finishing}
+              disabled={!catalog.canWrite}
+              onPress={() => void connect()}
+            />
+          )}
+          <Label muted style={s.caption}>
+            {caption}
+          </Label>
+        </View>
+      )}
       {(opening || finishing) && (
         <View style={s.progress} accessibilityLiveRegion="polite">
           <LoadingIndicator size={18} />
@@ -122,7 +175,9 @@ export default function SignInPanel({
           attendant, tu peux consulter les groupes.
         </Notice>
       )}
-      {state.kind === "cancelled" && <Notice>{copy.cancelled}</Notice>}
+      {state.kind === "cancelled" && (
+        <Notice>{methods ? socialCancelled : webSignInCopy.cancelled}</Notice>
+      )}
       {failure && <Notice tone="error">{failure}</Notice>}
     </View>
   )
