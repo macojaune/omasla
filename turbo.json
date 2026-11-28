@@ -50,6 +50,7 @@
     }
   },
   "globalEnv": [
+    "ALLOW_DEV_REPLAY",
     "ALLOW_LOCAL_FIXTURES",
     "AUTH_APPLE_ID",
     "AUTH_APPLE_SECRET",

@@ -77,3 +77,26 @@ Les tests utilisent les fonctions publiques avec `convex-test`, des identités s
 Le smoke HTTP local `node packages/auth/scripts/smoke-local.mjs` exerce aussi les droits opérationnels avec un JWT de modérateur issu du vrai service Auth.js, les refus du spectateur et l’isolation des reçus de déclaration. Il exige le runtime local configuré ; une validation de syntaxe ne remplace pas son exécution.
 
 Références : [tests Convex](https://docs.convex.dev/testing/convex-test), [fonctions planifiées](https://docs.convex.dev/scheduling/scheduled-functions).
+
+## Rejeu de sorties en DEV (MAR-465)
+
+Pour tester l'app hors saison, `scripts/dev-replay.mjs` rejoue une soirée passée sur un déploiement **DEV**, à l'heure actuelle et en accéléré.
+
+- **Garde-fous :** les fonctions `devReplay:*` sont internes et refusent tout appel si la variable `ALLOW_DEV_REPLAY=true` n'est pas définie sur le déploiement. Le script refuse le déploiement de production et exige `--deployment`.
+- **Étiquetage :** tout est attribué au compte `[REJEU] Membre simulé`. Les positions portent `sampleId` ou `requestId` `replay:<run>:…`, et les sessions ont pour appareil `replay:<run>`. Un groupe déjà en direct n'est jamais repris.
+- **Politique :** `ensurePolicy` crée une politique de test seulement si le déploiement n'en a aucune.
+
+```sh
+# 1. Export PROD en lecture seule (jamais commité : contient des identifiants)
+npx convex data groups --prod --limit 1000 --format jsonl > /tmp/prod-groups.jsonl
+npx convex data positions --prod --limit 8000 --format jsonl > /tmp/prod-positions.jsonl
+# 2. Activer le rejeu sur DEV, une fois
+npx convex env set ALLOW_DEV_REPLAY true --deployment <dev>
+# 3. Rejouer le dimanche 8 février 2026, 17 h → 3 h, dix fois plus vite
+node scripts/dev-replay.mjs play --deployment <dev> --source /tmp/prod-positions.jsonl \
+  --groups /tmp/prod-groups.jsonl --night 2026-02-08 --speed 10
+# 4. Nettoyer
+node scripts/dev-replay.mjs purge --deployment <dev>
+```
+
+Seuls le titre du groupe, les coordonnées, l'heure et l'indicateur `fromApp` sont lus. Les groupes sont associés par titre exact. Un point `fromApp` devient une diffusion en direct, les autres deviennent des ajouts du public.
