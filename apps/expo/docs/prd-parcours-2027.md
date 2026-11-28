@@ -56,7 +56,7 @@ Barre d’onglets en bas, avec un bouton central :
 
 ## Maquettes
 
-Premières maquettes (positions, distances et horaires fictifs ; noms de groupes réels du DEV). Elles montrent encore le « ? » central et le mot « référent » : à mettre à jour avec le « + » et « membre du groupe ».
+Premières maquettes (positions, distances et horaires fictifs ; noms de groupes réels du DEV). Mises à jour le 28 novembre avec le « + » central et « membre du groupe ». Les couleurs de l’app suivent la palette Omasla ; l’implémentation fait foi pour les détails.
 
 ![Retrouver un groupe](./maquettes/2026-11-27-retrouver-un-groupe.png)
 
