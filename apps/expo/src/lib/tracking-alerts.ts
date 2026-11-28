@@ -13,7 +13,7 @@ export function speedWarningAlert(
   return {
     identifier: `tracking-speed-${record.sessionId}:${record.deviceId}:${record.generation}:${warningAt}`,
     storageKey: "omasla.last-speed-warning.v1",
-    title: "Vitesse élevée : vérifiez le suivi",
+    title: "Vitesse élevée : vérifie le suivi",
     body: "Si cette vitesse persiste, le partage de position du groupe sera arrêté automatiquement.",
   }
 }
@@ -22,7 +22,7 @@ export function zoneEndedAlert(record: TrackingRecord): TrackingAlert {
     identifier: `tracking-zone-${record.sessionId}:${record.deviceId}:${record.generation}`,
     storageKey: "omasla.last-zone-end.v1",
     title: "Suivi arrêté : sortie de zone",
-    body: "La sortie de la zone autorisée a été confirmée. Votre position n’est plus partagée pour ce groupe.",
+    body: "La sortie de la zone autorisée a été confirmée. Ta position n’est plus partagée pour ce groupe.",
   }
 }
 /** Serialisation also deduplicates two callbacks arriving before the first OS delivery completes. */

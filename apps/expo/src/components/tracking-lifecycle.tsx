@@ -11,8 +11,10 @@ export default function TrackingLifecycle() {
   useEffect(() => {
     if (Platform.OS === "web") return
     const received = (response: Notifications.NotificationResponse) => {
-      if (response.notification.request.content.data?.screen === "/account") {
-        router.push("/account")
+      const screen = response.notification.request.content.data?.screen
+      // "/account" is kept for notifications scheduled by older builds.
+      if (screen === "/moi" || screen === "/account") {
+        router.navigate("/moi")
         void Notifications.clearLastNotificationResponseAsync()
       }
     }

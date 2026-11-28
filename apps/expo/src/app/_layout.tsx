@@ -46,7 +46,7 @@ function Recovery({ onRetry }: { onRetry?: () => void }) {
       <View style={styles.content}>
         <Label style={styles.title}>On revient vite.</Label>
         <Label muted>
-          Le service de suivi est momentanément indisponible. Réessayez dans un
+          Le service de suivi est momentanément indisponible. Réessaie dans un
           instant.
         </Label>
         {onRetry && <Button title="Réessayer" onPress={onRetry} />}
@@ -65,8 +65,9 @@ function Routes() {
           animation: "slide_from_right",
         }}
       >
+        <Stack.Screen name="(tabs)" />
         <Stack.Screen
-          name="account"
+          name="ajouter"
           options={{ presentation: "modal", animation: "slide_from_bottom" }}
         />
         <Stack.Screen

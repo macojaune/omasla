@@ -118,3 +118,23 @@ export function navigationUrl(
     ? `https://maps.apple.com/?daddr=${coordinates}&dirflg=w`
     : `https://www.google.com/maps/dir/?api=1&destination=${coordinates}&travelmode=walking`
 }
+/** « Ce soir » : live first, then recently seen, then not seen yet. Alphabetical within a section. */
+export function tonightSections(catalog: PublicCatalog, now: number) {
+  const live: PublicGroup[] = []
+  const seen: PublicGroup[] = []
+  const waiting: PublicGroup[] = []
+  for (const group of [...catalog.groups].sort((a, b) =>
+    a.title.localeCompare(b.title, "fr"),
+  )) {
+    const freshness = positionFreshness(group.position, catalog.policy, now)
+    if (
+      group.live &&
+      group.position?.source === "referent" &&
+      freshness === "recent"
+    )
+      live.push(group)
+    else if (visiblePosition(group, catalog, now)) seen.push(group)
+    else waiting.push(group)
+  }
+  return { live, seen, waiting }
+}

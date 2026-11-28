@@ -22,7 +22,7 @@ const deliver = createTrackingAlertDelivery({
         title: alert.title,
         body: alert.body,
         sound: "default",
-        data: { screen: "/account" },
+        data: { screen: "/moi" },
       },
       trigger: Platform.OS === "android" ? { channelId: "tracking" } : null,
     })

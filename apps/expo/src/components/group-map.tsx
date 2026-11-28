@@ -364,7 +364,7 @@ export default function GroupMap({
           <Marker
             id="user-position"
             lngLat={[userLocation.longitude, userLocation.latitude]}
-            accessibilityLabel="Votre position"
+            accessibilityLabel="Ta position"
           >
             <View
               style={[
@@ -446,7 +446,7 @@ export default function GroupMap({
             La carte prend du temps à charger
           </Label>
           <Label muted style={s.messageText}>
-            Vous pouvez consulter les groupes dans la liste.
+            Tu peux consulter les groupes dans la liste.
           </Label>
           <Button
             title="Réessayer la carte"

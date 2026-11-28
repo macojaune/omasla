@@ -130,7 +130,7 @@ export function useLocationHandler() {
         await refreshLocal()
       } catch {
         setError(
-          "L’état du partage est indisponible. Vérifiez les réglages de localisation.",
+          "L’état du partage est indisponible. Vérifie les réglages de localisation.",
         )
       } finally {
         setBusy(false)
@@ -154,7 +154,7 @@ export function useLocationHandler() {
             existing.pendingStop)
         )
           throw new Error(
-            "Arrêtez le suivi en cours sur ce téléphone avant de continuer.",
+            "Arrête le suivi en cours sur ce téléphone avant de continuer.",
           )
         started.record = await writeTracking(session)
         await runNativeLocation()
@@ -192,7 +192,7 @@ export function useLocationHandler() {
       const epoch = activationEpoch()
       if (await readTracking())
         throw new Error(
-          "Arrêtez le suivi en cours sur ce téléphone avant d’en commencer un autre.",
+          "Arrête le suivi en cours sur ce téléphone avant d’en commencer un autre.",
         )
       await prepareLocationPermissions()
       const installationId = await deviceId()
@@ -254,7 +254,7 @@ export function useLocationHandler() {
         throw new Error("Ce suivi est associé à un autre téléphone.")
       const record = await readTracking()
       if (record?.pendingStop)
-        throw new Error("Confirmez d’abord l’arrêt en attente.")
+        throw new Error("Confirme d’abord l’arrêt en attente.")
       await prepareLocationPermissions()
       const client = await authenticatedClient()
       const state = await client.query(api.sessions.mine, {})
@@ -275,9 +275,7 @@ export function useLocationHandler() {
       const epoch = activationEpoch()
       const current = await readTracking()
       if (current)
-        throw new Error(
-          "Arrêtez votre suivi en cours avant d’accepter le relais.",
-        )
+        throw new Error("Arrête ton suivi en cours avant d’accepter le relais.")
       await prepareLocationPermissions()
       const client = await authenticatedClient()
       const next = await client.mutation(api.sessions.acceptHandoff, {
