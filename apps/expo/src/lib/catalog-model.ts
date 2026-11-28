@@ -118,23 +118,49 @@ export function navigationUrl(
     ? `https://maps.apple.com/?daddr=${coordinates}&dirflg=w`
     : `https://www.google.com/maps/dir/?api=1&destination=${coordinates}&travelmode=walking`
 }
-/** « Ce soir » : live first, then recently seen, then not seen yet. Alphabetical within a section. */
-export function tonightSections(catalog: PublicCatalog, now: number) {
+/** A member of the group is broadcasting and the point is fresh. */
+export function isLiveNow(
+  group: PublicGroup,
+  catalog: PublicCatalog,
+  now: number,
+) {
+  return (
+    group.live &&
+    group.position?.source === "referent" &&
+    positionFreshness(group.position, catalog.policy, now) === "recent"
+  )
+}
+/**
+ * « Ce soir » : live first, then recently seen, then not seen yet.
+ * Inside a section, « Mes groupes » first, then alphabetical order.
+ */
+export function tonightSections(
+  catalog: PublicCatalog,
+  now: number,
+  favorites: ReadonlySet<string> = new Set(),
+) {
   const live: PublicGroup[] = []
   const seen: PublicGroup[] = []
   const waiting: PublicGroup[] = []
-  for (const group of [...catalog.groups].sort((a, b) =>
-    a.title.localeCompare(b.title, "fr"),
-  )) {
-    const freshness = positionFreshness(group.position, catalog.policy, now)
-    if (
-      group.live &&
-      group.position?.source === "referent" &&
-      freshness === "recent"
-    )
-      live.push(group)
+  const sorted = [...catalog.groups].sort(
+    (a, b) =>
+      Number(favorites.has(b.id)) - Number(favorites.has(a.id)) ||
+      a.title.localeCompare(b.title, "fr"),
+  )
+  for (const group of sorted) {
+    if (isLiveNow(group, catalog, now)) live.push(group)
     else if (visiblePosition(group, catalog, now)) seen.push(group)
     else waiting.push(group)
   }
   return { live, seen, waiting }
+}
+/** Age of the last loaded data, for the offline notice. */
+export function dataAgeLabel(savedAt: number, localNow: number) {
+  const minutes = Math.floor(Math.max(0, localNow - savedAt) / 60_000)
+  if (minutes < 1) return "chargées il y a moins d’une minute"
+  if (minutes < 60) return `chargées il y a ${minutes} min`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `chargées il y a ${hours} h`
+  const days = Math.floor(hours / 24)
+  return `chargées il y a ${days} jour${days > 1 ? "s" : ""}`
 }
