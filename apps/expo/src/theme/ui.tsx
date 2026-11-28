@@ -98,6 +98,7 @@ const symbols = {
   plus: { ios: "plus", android: "add", web: "add" },
   tonight: { ios: "moon.stars", android: "bedtime", web: "bedtime" },
   groups: { ios: "person.3", android: "groups", web: "groups" },
+  mail: { ios: "envelope", android: "mail", web: "mail" },
 } as const
 export type IconName = keyof typeof symbols
 export function Icon({
