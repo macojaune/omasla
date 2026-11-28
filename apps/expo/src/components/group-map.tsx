@@ -39,6 +39,8 @@ export interface GroupMapProps {
   catalog: PublicCatalog
   now: number
   selectedId?: string
+  /** Group in front of the carousel: drawn on top with its full plaque. */
+  highlightedId?: string
   selectionReady?: boolean
   cameraReady?: boolean
   onSelect: (group: PublicGroup) => void
@@ -81,6 +83,7 @@ export default function GroupMap({
   catalog,
   now,
   selectedId,
+  highlightedId,
   selectionReady = true,
   cameraReady = true,
   onSelect,
@@ -336,7 +339,10 @@ export default function GroupMap({
           minZoom={4}
           maxZoom={20}
         />
-        {visible.map(({ group, position }) => {
+        {[
+          ...visible.filter(({ group }) => group.id !== highlightedId),
+          ...visible.filter(({ group }) => group.id === highlightedId),
+        ].map(({ group, position }) => {
           const freshness = positionFreshness(position, catalog.policy, now)
           const state =
             freshness === "aging"
@@ -351,7 +357,7 @@ export default function GroupMap({
           const banner = (
             <GroupBanner
               group={group}
-              selected={selected}
+              selected={selected || highlightedId === group.id}
               compact={zoom < COMPACT_ZOOM}
               state={state}
               label={positionLabel(group, catalog, now)}

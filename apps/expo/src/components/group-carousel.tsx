@@ -1,4 +1,5 @@
 import type { PropsWithChildren } from "react"
+import { useRef } from "react"
 import { FlatList, Pressable, StyleSheet, View } from "react-native"
 
 import type { PublicCatalog, PublicGroup } from "@omasla/convex"
@@ -12,6 +13,7 @@ import { Label, usePalette } from "~/theme/ui"
 import GroupEmblem from "./group-emblem"
 
 const GAP = 10
+const VIEWABILITY = { itemVisiblePercentThreshold: 70 }
 
 /** Groups inside the current map frame, above the tab bar. */
 export default function GroupCarousel({
@@ -21,6 +23,8 @@ export default function GroupCarousel({
   width,
   largeText,
   onSelect,
+  focusedId,
+  onFocus,
 }: {
   items: CarouselItem[]
   catalog: PublicCatalog
@@ -28,10 +32,26 @@ export default function GroupCarousel({
   width: number
   largeText: boolean
   onSelect: (group: PublicGroup) => void
+  /** Card currently in front; its group is highlighted on the map. */
+  focusedId?: string
+  onFocus?: (groupId: string) => void
 }) {
   const c = usePalette()
   // The next card peeks out to show that the row scrolls.
   const cardWidth = Math.min(largeText ? 340 : 300, width - 64)
+  // FlatList requires a stable callback; read the latest handler through a ref.
+  const focusRef = useRef(onFocus)
+  focusRef.current = onFocus
+  const onViewable = useRef(
+    ({
+      viewableItems,
+    }: {
+      viewableItems: { item: CarouselItem; isViewable: boolean }[]
+    }) => {
+      const first = viewableItems.find((token) => token.isViewable)
+      if (first?.item) focusRef.current?.(first.item.group.id)
+    },
+  )
   return (
     <FlatList
       horizontal
@@ -42,11 +62,15 @@ export default function GroupCarousel({
       snapToInterval={cardWidth + GAP}
       snapToAlignment="start"
       decelerationRate="fast"
+      // The first card that is mostly on screen is the one in front.
+      viewabilityConfig={VIEWABILITY}
+      onViewableItemsChanged={onViewable.current}
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={s.row}
       ItemSeparatorComponent={() => <View style={{ width: GAP }} />}
       renderItem={({ item }) => {
         const { group, position, state, distance } = item
+        const focused = focusedId === group.id
         const label = positionLabel(group, catalog, now)
         const age = ageLabel(position, now)
         const distanceText = distance === null ? null : distanceLabel(distance)
@@ -59,6 +83,7 @@ export default function GroupCarousel({
         return (
           <Pressable
             accessibilityRole="button"
+            accessibilityState={{ selected: focused }}
             accessibilityLabel={`${group.title}. ${label}, ${age}${distanceText ? `, à ${distanceText}` : ""}. Ouvrir la fiche`}
             onPress={() => onSelect(group)}
             style={({ pressed }) => [
@@ -66,6 +91,7 @@ export default function GroupCarousel({
               {
                 width: cardWidth,
                 backgroundColor: c.surface,
+                borderColor: focused ? c.primary : "transparent",
                 shadowOpacity: c.isDark ? 0.35 : 0.14,
                 opacity: pressed ? 0.8 : 1,
               },
@@ -142,6 +168,7 @@ export function MapMessage({
 const s = StyleSheet.create({
   row: { paddingHorizontal: 16, paddingBottom: 4 },
   card: {
+    borderWidth: 2,
     minHeight: 76,
     borderRadius: 18,
     padding: 12,

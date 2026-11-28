@@ -160,6 +160,14 @@ export default function MapScreen() {
     () => (data ? searchGroups(data, catalog.now, search) : []),
     [data, catalog.now, search],
   )
+  // The carousel card in front highlights its group on the map.
+  const [focusedId, setFocusedId] = useState<string | undefined>()
+  const highlightedId =
+    selectedId || !carousel.length
+      ? undefined
+      : carousel.some((item) => item.group.id === focusedId)
+        ? focusedId
+        : carousel[0]?.group.id
   const mapCatalog = useMemo(() => {
     if (!data) return null
     // The open sheet keeps its group on the map even when filtered out.
@@ -475,6 +483,8 @@ export default function MapScreen() {
         width={wide ? Math.min(width, 720) : width}
         largeText={largeText}
         onSelect={select}
+        focusedId={highlightedId}
+        onFocus={setFocusedId}
       />
     )
   })()
@@ -491,6 +501,7 @@ export default function MapScreen() {
           catalog={mapCatalog}
           now={catalog.now}
           selectedId={selectedId}
+          highlightedId={highlightedId}
           selectionReady={wide || sheetIndex >= 0}
           cameraReady={
             wide ||
