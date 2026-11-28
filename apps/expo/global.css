@@ -5,31 +5,31 @@
 @layer theme {
   :root {
     @variant light {
-      --color-background: #f3f5f8;
-      --color-surface: #ffffff;
-      --color-foreground: #172033;
-      --color-muted: #5e697a;
-      --color-border: #e2e6ec;
-      --color-border-strong: #aab5c5;
-      --color-primary: #1765e8;
+      --color-background: #efe8dc;
+      --color-surface: #fbf8f3;
+      --color-foreground: #1f2124;
+      --color-muted: #6b6660;
+      --color-border: #e3dacb;
+      --color-border-strong: #b9ad99;
+      --color-primary: #5a1ceb;
       --color-on-primary: #ffffff;
-      --color-destructive: #b33234;
-      --color-success: #16734c;
-      --color-warning: #89550b;
+      --color-destructive: #c42e18;
+      --color-success: #15784a;
+      --color-warning: #8a4e06;
     }
 
     @variant dark {
-      --color-background: #111820;
-      --color-surface: #202935;
-      --color-foreground: #f3f5f8;
-      --color-muted: #aebaca;
-      --color-border: #354354;
-      --color-border-strong: #64748b;
-      --color-primary: #82b3ff;
-      --color-on-primary: #101b2c;
-      --color-destructive: #ff999b;
-      --color-success: #86d9b2;
-      --color-warning: #e8bd76;
+      --color-background: #16141b;
+      --color-surface: #221f28;
+      --color-foreground: #f3eee6;
+      --color-muted: #b5ada2;
+      --color-border: #3a3541;
+      --color-border-strong: #6a6273;
+      --color-primary: #ae93ff;
+      --color-on-primary: #16141b;
+      --color-destructive: #ff9a87;
+      --color-success: #7dd3a8;
+      --color-warning: #ebbd72;
     }
 
     @variant ios {

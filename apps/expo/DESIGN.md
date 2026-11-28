@@ -2,30 +2,32 @@
 name: "Omasla — application native"
 description: "Système visuel extrait de l’implémentation locale Expo / React Native."
 colors:
-  background: "#F3F5F8"
-  surface: "#ffffff"
-  ink: "#172033"
-  muted: "#5E697A"
-  line: "#E2E6EC"
-  primary: "#1765E8"
-  primary-soft: "#EAF1FF"
+  background: "#EFE8DC"
+  surface: "#FBF8F3"
+  ink: "#1F2124"
+  muted: "#6B6660"
+  line: "#E3DACB"
+  primary: "#5A1CEB"
+  primary-soft: "#ECE5FF"
   primary-text: "#ffffff"
-  success: "#16734C"
-  warning: "#89550B"
-  warning-soft: "#FFF3DC"
-  danger: "#b33234"
-  night-background: "#111820"
-  night-surface: "#202935"
-  night-ink: "#F3F5F8"
-  night-muted: "#AEBACA"
-  night-line: "#354354"
-  night-primary: "#82B3FF"
-  night-primary-soft: "#213855"
-  night-primary-text: "#101B2C"
-  night-success: "#86d9b2"
-  night-warning: "#e8bd76"
+  accent: "#E2381F"
+  night-accent: "#FF7A62"
+  success: "#15784A"
+  warning: "#8A4E06"
+  warning-soft: "#FBEBD3"
+  danger: "#C42E18"
+  night-background: "#16141B"
+  night-surface: "#221F28"
+  night-ink: "#F3EEE6"
+  night-muted: "#B5ADA2"
+  night-line: "#3A3541"
+  night-primary: "#AE93FF"
+  night-primary-soft: "#2D2450"
+  night-primary-text: "#16141B"
+  night-success: "#7DD3A8"
+  night-warning: "#EBBD72"
   night-warning-soft: "#3e2e17"
-  night-danger: "#ff999b"
+  night-danger: "#FF9A87"
   night-map-land: "#202d31"
   night-map-sand: "#38433f"
   night-map-green: "#314c43"
@@ -224,7 +226,7 @@ components:
 
 **Creative North Star: "La carte reste le lieu"**
 
-Omasla conserve le langage des applications natives de navigation et lui donne une identité de ville : fond vectoriel clair calcaire ou nocturne, volumes simples issus des hauteurs disponibles et bannières attachées aux positions des groupes. La composition A maintient la recherche et la fiche dans un seul panneau. Le bleu porte les actions de l’interface ; la bannière et son emblème portent l’identité du groupe, indépendamment de son statut.
+Omasla conserve le langage des applications natives de navigation et lui donne une identité de ville : fond vectoriel clair calcaire ou nocturne, volumes simples issus des hauteurs disponibles et bannières attachées aux positions des groupes. La composition A maintient la recherche et la fiche dans un seul panneau. Le violet Omasla porte les actions de l’interface et le rouge marque l’accent du bouton central ; la bannière et son emblème portent l’identité du groupe, indépendamment de son statut.
 
 La densité reste fonctionnelle. Les intitulés français, la typographie du système et les symboles natifs portent l’interface. Le thème suit celui de l’appareil ; les surfaces iOS translucides deviennent opaques lorsque la réduction de transparence est activée.
 
@@ -272,7 +274,7 @@ Le fond jour distingue terre calcaire, végétation douce, routes claires et eau
 
 Les couleurs de `groupIdentity` sont des données d’identité, pas une échelle de statuts. Les cinq fixtures reconnues par leur nom et le suffixe `· démo` possèdent un dessin SVG et une couleur dédiés. Les autres groupes reçoivent un monogramme et une couleur stable calculée à partir de leur identifiant, en attendant leur propre identité ; aucun logo officiel n’est inventé.
 
-**The Action and State Rule.** Les couleurs du groupe identifient sa bannière et son emblème ; elles ne prouvent ni le live ni la fraîcheur. Le vert porte le statut récent, l’ambre l’ancienneté et le texte distingue live, observation et dernier point. Le bleu d’interface conserve son rôle d’action.
+**The Action and State Rule.** Les couleurs du groupe identifient sa bannière et son emblème ; elles ne prouvent ni le live ni la fraîcheur. Le vert porte le statut récent, l’ambre l’ancienneté et le texte distingue live, observation et dernier point. Le violet d’interface conserve son rôle d’action.
 
 ## Typography
 
