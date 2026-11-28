@@ -23,6 +23,7 @@ import type { Bounds } from "~/lib/map-view"
 import GroupBanner, { GROUP_BANNER_OFFSET } from "~/components/group-banner"
 import { createCarnivalMapStyle } from "~/lib/carnival-map-style"
 import { ageLabel, positionLabel, visiblePosition } from "~/lib/catalog-model"
+import { overviewPoints } from "~/lib/map-view"
 import { Button, Label, usePalette } from "~/theme/ui"
 
 interface Coordinate {
@@ -129,7 +130,8 @@ export default function GroupMap({
   )
   const padding = useMemo(
     () => ({
-      top: safe.top + 118,
+      // Search field and filter chips, plus room for a plaque above its point.
+      top: safe.top + 210,
       right: safe.right + 104,
       bottom: Math.max(
         safe.bottom + 44,
@@ -195,9 +197,10 @@ export default function GroupMap({
       bearing: -12,
       duration: reduceMotion ? 0 : 600,
     }
-    if (kind === "overview" && visible.length > 1) {
-      const lons = visible.map(({ position }) => position.longitude)
-      const lats = visible.map(({ position }) => position.latitude)
+    const framed = overviewPoints(visible.map(({ position }) => position))
+    if (kind === "overview" && framed.length > 1) {
+      const lons = framed.map((position) => position.longitude)
+      const lats = framed.map((position) => position.latitude)
       camera.current.fitBounds(
         [
           Math.min(...lons) - 0.00035,
@@ -217,7 +220,7 @@ export default function GroupMap({
         kind === "user"
           ? (cameraRequest?.coordinate ?? userLocation)
           : kind === "overview"
-            ? (visible[0]?.position ?? {
+            ? (framed[0] ?? {
                 longitude: initialCenter[0],
                 latitude: initialCenter[1],
               })

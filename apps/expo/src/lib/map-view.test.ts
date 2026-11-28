@@ -10,6 +10,7 @@ import {
   groupAction,
   inBounds,
   mapGroups,
+  overviewPoints,
   sameBounds,
   searchGroups,
   spotCounts,
@@ -192,5 +193,17 @@ describe("group sheet main action", () => {
     expect(groupAction(seen, { ...all, policy: null }, now).primary).toBe(
       "observe",
     )
+  })
+})
+
+describe("overviewPoints", () => {
+  it("ignores stray points outside Guadeloupe", () => {
+    const pap = { latitude: 16.24, longitude: -61.53 }
+    const stray = { latitude: 10.5, longitude: -66.9 }
+    expect(overviewPoints([pap, stray])).toEqual([pap])
+  })
+  it("keeps everything when nothing is in Guadeloupe", () => {
+    const stray = { latitude: 10.5, longitude: -66.9 }
+    expect(overviewPoints([stray])).toEqual([stray])
   })
 })

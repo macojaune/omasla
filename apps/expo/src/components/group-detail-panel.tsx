@@ -17,6 +17,9 @@ import {
 import { distanceLabel, distanceMeters, groupAction } from "~/lib/map-view"
 import { Button, Icon, Label, Notice, usePalette } from "~/theme/ui"
 
+const capitalize = (value: string) =>
+  value.charAt(0).toLocaleUpperCase("fr") + value.slice(1)
+
 export default function GroupDetailPanel({
   group,
   catalog,
@@ -104,7 +107,9 @@ export default function GroupDetailPanel({
         )}
         {group.position ? (
           <Label muted style={{ fontSize: 14, lineHeight: 21 }}>
-            {source} · {ageLabel(group.position, now)}
+            {label === "Signalée par le public"
+              ? capitalize(ageLabel(group.position, now))
+              : `${source} · ${ageLabel(group.position, now)}`}
           </Label>
         ) : (
           <Label muted style={{ fontSize: 15, lineHeight: 22 }}>

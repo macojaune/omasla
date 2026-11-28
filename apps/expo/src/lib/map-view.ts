@@ -203,3 +203,23 @@ export function groupAction(
         : "none"
   return { primary, addition }
 }
+
+/** Guadeloupe archipelago, generously bounded. A stray GPS point elsewhere must not zoom the overview out to the whole Caribbean. */
+export const GUADELOUPE_BOUNDS = {
+  west: -61.9,
+  south: 15.8,
+  east: -60.9,
+  north: 16.6,
+}
+export function overviewPoints<
+  T extends { latitude: number; longitude: number },
+>(points: T[]): T[] {
+  const inside = points.filter(
+    (p) =>
+      p.longitude >= GUADELOUPE_BOUNDS.west &&
+      p.longitude <= GUADELOUPE_BOUNDS.east &&
+      p.latitude >= GUADELOUPE_BOUNDS.south &&
+      p.latitude <= GUADELOUPE_BOUNDS.north,
+  )
+  return inside.length ? inside : points
+}
