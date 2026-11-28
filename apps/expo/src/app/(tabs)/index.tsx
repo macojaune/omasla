@@ -148,9 +148,6 @@ export default function Discovery() {
   const controlStyle = useAnimatedStyle(() => ({
     top: Math.max(topInset + 42, panelPosition.value - 120),
   }))
-  const areaStyle = useAnimatedStyle(() => ({
-    top: Math.max(topInset + 12, panelPosition.value - 42),
-  }))
   const collapsed = !wide && sheetIndex === 0 && keyboardInset === 0
   const renderHandle = useCallback(
     () => <DiscoveryHandle index={sheetIndex} />,
@@ -243,8 +240,6 @@ export default function Discovery() {
     () => (data ? { ...data, groups } : null),
     [data, groups],
   )
-  const demo =
-    data?.groups.some((group) => group.title.endsWith(" · démo")) ?? false
   function select(group: PublicGroup) {
     if (!selectedId) listPanelIndex.current = sheetIndex
     listReady.current = false
@@ -479,32 +474,6 @@ export default function Discovery() {
           <Label muted>La carte se prépare…</Label>
         </View>
       )}
-      <Animated.View
-        pointerEvents="none"
-        style={[
-          s.area,
-          { left: wide ? 436 : 22 },
-          wide ? { top: insets.top + 16 } : areaStyle,
-        ]}
-      >
-        <View
-          key={fontScale}
-          style={[s.areaLabel, { backgroundColor: c.surface }]}
-        >
-          <Label
-            maxFontSizeMultiplier={1.5}
-            numberOfLines={2}
-            style={{
-              color: c.muted,
-              fontSize: 12,
-              lineHeight: 18,
-              fontWeight: "600",
-            }}
-          >
-            {demo ? "Démo · positions simulées" : "Pointe-à-Pitre et alentours"}
-          </Label>
-        </View>
-      </Animated.View>
       <Animated.View
         pointerEvents="box-none"
         style={[s.controls, wide ? { top: insets.top + 64 } : controlStyle]}
@@ -903,8 +872,6 @@ const s = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  area: { position: "absolute", right: 16, alignItems: "flex-start" },
-  areaLabel: { borderRadius: 12, paddingHorizontal: 11, paddingVertical: 6 },
   controls: { position: "absolute", right: 16, width: 52 },
   control: {
     width: 52,

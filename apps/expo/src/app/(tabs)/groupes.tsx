@@ -94,15 +94,6 @@ export default function Groups() {
             />
           ) : null
         }
-        ListFooterComponent={
-          groups.length ? (
-            <Label muted style={s.footer}>
-              {groups.length} groupe{groups.length > 1 ? "s" : ""} référencé
-              {groups.length > 1 ? "s" : ""}. Leur présence ici ne garantit pas
-              une sortie ce soir.
-            </Label>
-          ) : undefined
-        }
       />
     </SafeAreaView>
   )
@@ -127,5 +118,4 @@ const s = StyleSheet.create({
     gap: 10,
   },
   input: { flex: 1, fontSize: 16, minHeight: 48 },
-  footer: { fontSize: 12, lineHeight: 18, paddingTop: 20 },
 })
