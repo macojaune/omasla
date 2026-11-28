@@ -2,8 +2,6 @@ import type { CameraRef } from "@maplibre/maplibre-react-native"
 import { useEffect, useMemo, useRef, useState } from "react"
 import {
   AccessibilityInfo,
-  Alert,
-  Linking,
   Platform,
   Pressable,
   StyleSheet,
@@ -68,24 +66,6 @@ function validCoordinate(
       Math.abs(value.longitude) <= 180,
   )
 }
-function attribution() {
-  Alert.alert(
-    "Sources de la carte",
-    "Fond : IGN — Plan IGN.\nBâtiments et hauteurs : IGN — BD TOPO®, via Plan IGN.\nLicence Ouverte 2.0.\n\nSeules les hauteurs disponibles sont représentées en relief.",
-    [
-      { text: "Fermer", style: "cancel" },
-      {
-        text: "Source IGN",
-        onPress: () => {
-          void Linking.openURL(
-            "https://www.data.gouv.fr/datasets/bd-topo-r",
-          ).catch(() => undefined)
-        },
-      },
-    ],
-  )
-}
-
 export default function GroupMap({
   catalog,
   now,
@@ -408,28 +388,6 @@ export default function GroupMap({
           {relief ? "2D" : "3D"}
         </Label>
       </Pressable>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Sources et attribution IGN de la carte"
-        onPress={attribution}
-        style={[
-          s.attribution,
-          {
-            left: safe.left + 180,
-            top: safe.top + 14,
-          },
-        ]}
-      >
-        <Label
-          maxFontSizeMultiplier={1.5}
-          style={[
-            s.attributionText,
-            { color: c.ink, backgroundColor: c.surface },
-          ]}
-        >
-          © IGN
-        </Label>
-      </Pressable>
       {!rendered && slow && (
         <View
           style={[
@@ -477,21 +435,6 @@ const s = StyleSheet.create({
     shadowOpacity: 0.12,
     shadowRadius: 8,
     elevation: 3,
-  },
-  attribution: {
-    position: "absolute",
-    minWidth: 48,
-    minHeight: 44,
-    justifyContent: "center",
-    alignItems: "flex-start",
-  },
-  attributionText: {
-    fontSize: 11,
-    lineHeight: 16,
-    borderRadius: 5,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    overflow: "hidden",
   },
   userPosition: { width: 18, height: 18, borderRadius: 9, borderWidth: 3 },
   loadError: { position: "absolute", gap: 10, padding: 18, borderRadius: 16 },

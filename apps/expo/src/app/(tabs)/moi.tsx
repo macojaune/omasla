@@ -14,6 +14,7 @@ import { useConvexAuth, useQuery } from "convex/react"
 import type { Id, SessionView } from "@omasla/convex"
 import { api } from "@omasla/convex"
 
+import MapSources from "~/components/map-sources"
 import { saveAuthReturn } from "~/lib/auth-return"
 import {
   cancelPendingActivations,
@@ -519,6 +520,7 @@ export default function Account() {
           </>
         )}
         {error && <Notice tone="error">{error}</Notice>}
+        <MapSources />
       </ScrollView>
     </SafeAreaView>
   )
