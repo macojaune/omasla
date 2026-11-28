@@ -30,7 +30,7 @@ import { useNativeAuth } from "~/utils/auth"
 const phaseLabels = {
   checking: "Vérification de la connexion…",
   permission: "Autorisation de localisation…",
-  locating: "Recherche de votre position actuelle…",
+  locating: "Recherche de ta position actuelle…",
   publishing: "Publication en cours…",
 }
 
@@ -84,11 +84,11 @@ export default function Observe() {
         canObserve: () => latest.current.group?.canObserve === true,
         ensureConnection: async () => {
           if (!latest.current.catalog.canWrite)
-            throw new Error("Vous êtes hors ligne.")
+            throw new Error("Tu es hors ligne.")
           client = await authenticatedClient()
         },
         findReceipt: () => {
-          if (!client) throw new Error("Connectez-vous pour continuer.")
+          if (!client) throw new Error("Connecte-toi pour continuer.")
           return client.query(api.observations.byRequest, { requestId })
         },
         requestPermission: Location.requestForegroundPermissionsAsync,
@@ -97,7 +97,7 @@ export default function Observe() {
             accuracy: Location.Accuracy.High,
           }),
         publish: async (observation) => {
-          if (!client) throw new Error("Connectez-vous pour continuer.")
+          if (!client) throw new Error("Connecte-toi pour continuer.")
           await client.mutation(api.observations.create, {
             groupId: group.id,
             requestId,
@@ -132,7 +132,7 @@ export default function Observe() {
       }
       style={[styles.page, { backgroundColor: c.surface }]}
     >
-      <ScreenHeader title="Déclarer le groupe" />
+      <ScreenHeader title="Ajouter une position" />
       <ScrollView
         contentContainerStyle={[styles.content, s.content]}
         keyboardShouldPersistTaps="handled"
@@ -154,8 +154,8 @@ export default function Observe() {
                 Merci pour le repère.
               </Label>
               <Label muted>
-                Votre observation a été enregistrée. Elle aide le public à
-                retrouver ce groupe.
+                Ton ajout a été enregistré. Elle aide le public à retrouver ce
+                groupe.
               </Label>
             </View>
             <Button
@@ -172,8 +172,8 @@ export default function Observe() {
                 Un compte pour contribuer.
               </Label>
               <Label muted>
-                Connectez-vous pour déclarer le groupe près de vous. Vous
-                reviendrez ici avant toute publication.
+                Connecte-toi pour ajouter la position du groupe près de toi. Tu
+                reviendras ici avant toute publication.
               </Label>
             </View>
             <Button
@@ -194,13 +194,14 @@ export default function Observe() {
             </Label>
             {catalog.offline && (
               <Notice tone="warning">
-                Reconnectez-vous pour vous connecter et déclarer le groupe.
+                Reconnecte-toi au réseau pour te connecter et ajouter la
+                position.
               </Notice>
             )}
             {error && <Notice tone="error">{error}</Notice>}
           </>
         ) : !group ? (
-          <Notice>Ce groupe n’est pas disponible. Revenez à la liste.</Notice>
+          <Notice>Ce groupe n’est pas disponible. Reviens à la liste.</Notice>
         ) : (
           <>
             <View style={s.intro}>
@@ -208,15 +209,14 @@ export default function Observe() {
                 Le groupe est ici, maintenant ?
               </Label>
               <Label muted>
-                Publiez uniquement si vous voyez ce groupe à l’endroit où vous
-                êtes.
+                Publie uniquement si tu vois ce groupe là où tu es.
               </Label>
             </View>
             <View style={[s.details, { borderColor: c.line }]}>
               <View style={s.detailRow}>
                 <Icon name="crosshair" color={c.primary} size={23} />
                 <View style={s.detailCopy}>
-                  <Label style={s.detailTitle}>Votre position actuelle</Label>
+                  <Label style={s.detailTitle}>Ta position actuelle</Label>
                   <Label muted style={s.caption}>
                     Relevée au moment de publier
                   </Label>
@@ -242,18 +242,18 @@ export default function Observe() {
             </View>
             {!group.canObserve && (
               <Notice tone="warning">
-                Un référent suit ce groupe en direct. Les déclarations sont
-                indisponibles pendant ce suivi.
+                Un membre du groupe le suit en direct. L’ajout de position est
+                indisponible pendant ce suivi.
               </Notice>
             )}
             {catalog.offline && (
               <Notice tone="warning">
-                Hors ligne. Aucune déclaration ne sera envoyée automatiquement à
-                la reconnexion.
+                Hors ligne. Aucune position ne sera envoyée automatiquement à la
+                reconnexion.
               </Notice>
             )}
             <Label muted style={s.caption}>
-              Votre position et l’heure seront publiques. Votre nom n’est pas
+              Ta position et l’heure seront publiques. Ton nom n’est pas
               affiché. La localisation sera demandée à la publication.
             </Label>
             {busy && (
@@ -272,7 +272,7 @@ export default function Observe() {
                 onPress={() => {
                   void Linking.openSettings().catch(() =>
                     setError(
-                      "Ouvrez les réglages du téléphone pour autoriser la localisation de l’app.",
+                      "Ouvre les réglages du téléphone pour autoriser la localisation de l’app.",
                     ),
                   )
                 }}
@@ -280,8 +280,8 @@ export default function Observe() {
             )}
             {attempted && error && (
               <Label muted style={s.caption}>
-                Réessayer vérifie d’abord si votre observation a été
-                enregistrée. Sinon, une nouvelle position sera relevée.
+                Réessayer vérifie d’abord si ton ajout a été enregistré. Sinon,
+                une nouvelle position sera relevée.
               </Label>
             )}
             <Button

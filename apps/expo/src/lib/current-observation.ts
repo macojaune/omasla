@@ -139,16 +139,16 @@ export async function publishCurrentObservation(ports: Ports) {
 export function observationErrorMessage(error: ObservationError) {
   switch (error.code) {
     case "permission":
-      return "Autorisez la localisation pour publier votre position actuelle. Vous pourrez réessayer quand vous serez près du groupe."
+      return "Autorise la localisation pour publier ta position actuelle. Tu pourras réessayer quand tu seras près du groupe."
     case "settings":
-      return "L’accès à votre position est désactivé. Autorisez-le dans les réglages du téléphone, puis revenez publier."
+      return "L’accès à ta position est désactivé. Autorise-le dans les réglages du téléphone, puis reviens publier."
     case "location":
-      return "Votre position actuelle n’a pas pu être obtenue. Vérifiez que la localisation du téléphone est activée, puis réessayez."
+      return "Ta position actuelle n’a pas pu être obtenue. Vérifie que la localisation du téléphone est activée, puis réessaie."
     case "stale":
-      return "Le téléphone n’a pas fourni une position assez récente. Réessayez pour obtenir un nouveau relevé."
+      return "Le téléphone n’a pas fourni une position assez récente. Réessaie pour obtenir un nouveau relevé."
     case "live":
-      return "Ce groupe est maintenant suivi en direct. La déclaration n’a pas été publiée."
+      return "Ce groupe est maintenant suivi en direct. Ta position n’a pas été publiée."
     case "cancelled":
-      return "La publication a été interrompue. Revenez sur le groupe pour réessayer."
+      return "La publication a été interrompue. Reviens sur le groupe pour réessayer."
   }
 }

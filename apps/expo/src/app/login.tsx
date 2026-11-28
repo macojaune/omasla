@@ -26,7 +26,7 @@ export default function LoginReturn() {
     if (!auth.isAuthenticated || auth.isLoading) return
     void consumeAuthReturn()
       .then((destination) => router.replace(destination))
-      .catch(() => router.replace("/account"))
+      .catch(() => router.replace("/moi"))
   }, [auth.isAuthenticated, auth.isLoading, router])
   return (
     <SafeAreaView style={[styles.page, { backgroundColor: c.surface }]}>
@@ -35,12 +35,12 @@ export default function LoginReturn() {
         <View style={s.intro}>
           <Icon name="person" color={c.primary} size={44} />
           <Label accessibilityRole="header" style={s.title}>
-            {auth.error ? "Reprenons la connexion." : "Retrouvez votre espace."}
+            {auth.error ? "Reprenons la connexion." : "Retrouve ton compte."}
           </Label>
           <Label muted>
             {auth.error
-              ? "Revenez à votre espace pour relancer la connexion."
-              : "Terminez la connexion dans la fenêtre ouverte. Vous retrouverez ensuite votre groupe ou votre espace."}
+              ? "Reviens à l’onglet Moi pour relancer la connexion."
+              : "Termine la connexion dans la fenêtre ouverte. Tu reviendras ensuite là où tu étais."}
           </Label>
         </View>
         {auth.error ? (
@@ -54,9 +54,9 @@ export default function LoginReturn() {
           </View>
         )}
         <Button
-          title="Revenir à mon espace"
+          title="Revenir à l’onglet Moi"
           variant="secondary"
-          onPress={() => router.replace("/account")}
+          onPress={() => router.replace("/moi")}
         />
       </ScrollView>
     </SafeAreaView>

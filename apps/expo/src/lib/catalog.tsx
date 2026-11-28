@@ -86,7 +86,7 @@ export function CatalogProvider({ children }: PropsWithChildren) {
       })
     const initialTimeout = setTimeout(() => {
       if (!receivedFresh.current) {
-        setError("La connexion au suivi est indisponible. Réessayez.")
+        setError("La connexion au suivi est indisponible. Réessaie.")
         setLoaded(true)
       }
     }, 12_000)
@@ -97,7 +97,7 @@ export function CatalogProvider({ children }: PropsWithChildren) {
         if (result) save(result)
       } catch {
         setError(
-          "Les positions ne se mettent pas à jour. Réessayez dans un instant.",
+          "Les positions ne se mettent pas à jour. Réessaie dans un instant.",
         )
         setLoaded(true)
         setRefreshing(false)
@@ -124,7 +124,7 @@ export function CatalogProvider({ children }: PropsWithChildren) {
       .query(api.catalog.list, {})
       .then(save)
       .catch(() => {
-        setError("La connexion au suivi est indisponible. Réessayez.")
+        setError("La connexion au suivi est indisponible. Réessaie.")
         setRefreshing(false)
         setLoaded(true)
       })

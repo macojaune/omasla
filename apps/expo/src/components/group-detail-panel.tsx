@@ -43,7 +43,7 @@ export default function GroupDetailPanel({
   const label = positionLabel(group, catalog, now)
   const source =
     group.position?.source === "referent"
-      ? "Référent GPS"
+      ? "Membre du groupe (GPS)"
       : group.position?.source === "community"
         ? "Observation du public"
         : "Dernier point connu"
@@ -108,8 +108,8 @@ export default function GroupDetailPanel({
         <View style={{ flexDirection: "row", gap: 10 }}>
           <Icon name="info" color={c.muted} size={18} />
           <Label muted style={{ fontSize: 13, lineHeight: 20, flex: 1 }}>
-            Le suivi du référent est actif. Les déclarations reprendront à la
-            fin du live.
+            Un membre du groupe diffuse sa position. L’ajout par le public
+            reprendra à la fin du direct.
           </Label>
         </View>
       )}

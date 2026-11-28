@@ -53,7 +53,7 @@ export function cancelPendingActivations() {
 export function assertActivationCurrent(expected: number) {
   if (expected !== activationVersion)
     throw new Error(
-      "Ce démarrage a été annulé. Relancez le suivi depuis votre espace.",
+      "Ce démarrage a été annulé. Relance le suivi depuis l’onglet Moi.",
     )
 }
 export async function deviceId() {
@@ -135,17 +135,17 @@ export async function prepareLocationPermissions() {
     )
   if (!(await Location.hasServicesEnabledAsync()))
     throw new Error(
-      "Activez la localisation de votre téléphone dans les réglages.",
+      "Active la localisation de ton téléphone dans les réglages.",
     )
   const foreground = await Location.requestForegroundPermissionsAsync()
   if (!foreground.granted)
     throw new Error(
-      "Autorisez votre position dans les réglages pour partager le suivi du groupe.",
+      "Autorise ta position dans les réglages pour partager le suivi du groupe.",
     )
   const background = await Location.requestBackgroundPermissionsAsync()
   if (!background.granted)
     throw new Error(
-      "Pour partager écran verrouillé, autorisez la localisation Toujours dans les réglages. Le choix Une seule fois ne suffit pas.",
+      "Pour partager écran verrouillé, autorise la localisation Toujours dans les réglages. Le choix Une seule fois ne suffit pas.",
     )
 }
 export async function runNativeLocation() {
@@ -160,7 +160,7 @@ export async function runNativeLocation() {
     foregroundService: {
       notificationTitle: "Omasla · suivi du groupe",
       notificationBody:
-        "Votre position est partagée. Ouvrez l’app pour arrêter le suivi.",
+        "Ta position est partagée. Ouvre l’app pour arrêter le suivi.",
       killServiceOnDestroy: true,
     },
   })

@@ -52,7 +52,10 @@ import {
 export default function Discovery() {
   const c = usePalette()
   const insets = useSafeAreaInsets()
-  const { width, height, fontScale } = useWindowDimensions()
+  const { width, height: windowHeight, fontScale } = useWindowDimensions()
+  // The tab bar sits below this screen: size the panel from the screen itself.
+  const [pageHeight, setPageHeight] = useState(0)
+  const height = pageHeight || windowHeight
   const wide = width >= 700
   const largeText = fontScale > 1.3
   const router = useRouter()
@@ -112,9 +115,9 @@ export default function Discovery() {
   }, [height, width])
   const panelPosition = useSharedValue(height - 350)
   const selected = catalog.data?.groups.find((group) => group.id === selectedId)
-  const topInset = insets.top + 82
+  const topInset = insets.top + 12
   const availableHeight = Math.max(120, height - topInset - keyboardInset)
-  const compactHeight = Math.min(112 + insets.bottom, availableHeight - 32)
+  const compactHeight = Math.min(112, availableHeight - 32)
   const listHeight = Math.max(
     compactHeight + 24,
     Math.min(availableHeight * 0.6, 386),
@@ -124,7 +127,7 @@ export default function Discovery() {
     Math.max(
       compactHeight + 24,
       Math.min(availableHeight * 0.6, 350),
-      detailHeadingHeight + DISCOVERY_HANDLE_HEIGHT + insets.bottom + 12,
+      detailHeadingHeight + DISCOVERY_HANDLE_HEIGHT + 12,
     ),
   )
   const middleHeight = selected ? detailHeight : listHeight
@@ -135,7 +138,7 @@ export default function Discovery() {
   const panelLayout = `${width}:${height}:${fontScale}:${keyboardInset}:${compactHeight}:${middleHeight}:${topInset}`
   const activeSnapPoint = snapPoints[sheetIndex] ?? snapPoints[1]
   const occupiedMapBottom = wide
-    ? insets.bottom + 20
+    ? 20
     : settledPanel?.layout === panelLayout && settledPanel.index === sheetIndex
       ? height - settledPanel.top
       : keyboardInset +
@@ -442,7 +445,12 @@ export default function Discovery() {
     </View>
   )
   return (
-    <View style={[s.page, { backgroundColor: c.background }]}>
+    <View
+      onLayout={(event) =>
+        setPageHeight(Math.round(event.nativeEvent.layout.height))
+      }
+      style={[s.page, { backgroundColor: c.background }]}
+    >
       {mapCatalog ? (
         <GroupMap
           catalog={mapCatalog}
@@ -471,37 +479,12 @@ export default function Discovery() {
           <Label muted>La carte se prépare…</Label>
         </View>
       )}
-      <View pointerEvents="box-none" style={[s.top, { top: insets.top + 10 }]}>
-        <Label
-          maxFontSizeMultiplier={1.5}
-          style={{ fontSize: 21, fontWeight: "700", letterSpacing: -0.4 }}
-        >
-          Omasla
-        </Label>
-        {material(
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Mon espace"
-            onPress={() => {
-              Keyboard.dismiss()
-              router.push("/account")
-            }}
-            style={s.namedAction}
-          >
-            <Icon name="person" color={c.ink} size={21} />
-            <Label maxFontSizeMultiplier={1.6} style={s.actionLabel}>
-              Mon espace
-            </Label>
-          </Pressable>,
-          { borderRadius: 28 },
-        )}
-      </View>
       <Animated.View
         pointerEvents="none"
         style={[
           s.area,
           { left: wide ? 436 : 22 },
-          wide ? { top: insets.top + 78 } : areaStyle,
+          wide ? { top: insets.top + 16 } : areaStyle,
         ]}
       >
         <View
@@ -524,7 +507,7 @@ export default function Discovery() {
       </Animated.View>
       <Animated.View
         pointerEvents="box-none"
-        style={[s.controls, wide ? { top: insets.top + 140 } : controlStyle]}
+        style={[s.controls, wide ? { top: insets.top + 64 } : controlStyle]}
       >
         {material(
           <View>
@@ -577,7 +560,7 @@ export default function Discovery() {
         <View
           style={[
             s.locationError,
-            { top: insets.top + 112, left: wide ? 436 : 16, right: 82 },
+            { top: insets.top + 16, left: wide ? 436 : 16, right: 82 },
           ]}
         >
           <Notice tone="warning">{locationError}</Notice>
@@ -603,7 +586,7 @@ export default function Discovery() {
                 s.sidebar,
                 {
                   top: topInset,
-                  bottom: Math.max(insets.bottom + 16, keyboardInset),
+                  bottom: Math.max(16, keyboardInset),
                 },
               ]
             : StyleSheet.absoluteFill
@@ -716,7 +699,7 @@ export default function Discovery() {
               keyboardShouldPersistTaps="handled"
               contentContainerStyle={{
                 paddingHorizontal: 24,
-                paddingBottom: insets.bottom + 30,
+                paddingBottom: 30,
               }}
             >
               <View
@@ -786,7 +769,7 @@ export default function Discovery() {
               ListHeaderComponent={listHeader}
               contentContainerStyle={{
                 paddingHorizontal: 24,
-                paddingBottom: insets.bottom + 24,
+                paddingBottom: 24,
               }}
               renderItem={({ item }) =>
                 data ? (
@@ -839,7 +822,7 @@ export default function Discovery() {
                         {search
                           ? "Aucun groupe à ce nom"
                           : filter === "live"
-                            ? "Pas de position live récente"
+                            ? "Aucun groupe en direct"
                             : catalog.offline
                               ? "Une connexion pour commencer"
                               : "Les groupes arrivent ici"}
@@ -885,15 +868,6 @@ const s = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     gap: 14,
-  },
-  top: {
-    position: "absolute",
-    left: 16,
-    right: 16,
-    flexDirection: "row",
-    gap: 10,
-    justifyContent: "space-between",
-    alignItems: "center",
   },
   material: {
     shadowColor: "#172B46",

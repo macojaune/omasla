@@ -58,9 +58,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         isAndroidBackgroundLocationEnabled: true,
         isAndroidForegroundServiceEnabled: true,
         locationWhenInUsePermission:
-          "Votre position permet de vous retrouver sur la carte, de déclarer un groupe ou de partager son suivi, uniquement à votre demande.",
+          "Ta position permet de te retrouver sur la carte, d’ajouter la position d’un groupe ou de diffuser celle du tien, uniquement à ta demande.",
         locationAlwaysAndWhenInUsePermission:
-          "En tant que référent, partagez la position de votre groupe même lorsque l’écran est verrouillé, jusqu’à l’arrêt du suivi.",
+          "En tant que membre d’un groupe, partage la position de ton groupe même lorsque l’écran est verrouillé, jusqu’à l’arrêt du suivi.",
       },
     ],
     "expo-notifications",

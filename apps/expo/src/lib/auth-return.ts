@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 
 const KEY = "omasla.auth-return.v1"
 export type AuthReturn =
-  | { pathname: "/account" }
+  | { pathname: "/moi" }
   | { pathname: "/observe"; params: { groupId: string } }
 export function saveAuthReturn(groupId?: string) {
   return AsyncStorage.setItem(
@@ -10,7 +10,7 @@ export function saveAuthReturn(groupId?: string) {
     JSON.stringify(
       groupId
         ? { pathname: "/observe", params: { groupId } }
-        : { pathname: "/account" },
+        : { pathname: "/moi" },
     ),
   )
 }
@@ -34,7 +34,7 @@ export async function consumeAuthReturn(): Promise<AuthReturn> {
     )
       return { pathname: "/observe", params: { groupId: value.params.groupId } }
   } catch {
-    /* An invalid return path falls back to the account screen. */
+    /* An invalid or legacy return path falls back to the Moi tab. */
   }
-  return { pathname: "/account" }
+  return { pathname: "/moi" }
 }
