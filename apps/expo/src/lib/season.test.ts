@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { daysUntil, easter, nextOuting, season } from "./season"
+import { daysUntil, easter, nextOuting, opensSeason, season } from "./season"
 
 const ymd = (value: Date) =>
   `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`
@@ -32,5 +32,9 @@ describe("season", () => {
   })
   it("jumps to next January after Ash Wednesday", () => {
     expect(ymd(nextOuting(new Date(2027, 1, 11)).date)).toBe("2028-01-02")
+  })
+  it("recognises the season opening", () => {
+    expect(opensSeason(nextOuting(new Date(2026, 10, 28)))).toBe(true)
+    expect(opensSeason(nextOuting(new Date(2027, 0, 11)))).toBe(false)
   })
 })

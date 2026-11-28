@@ -23,6 +23,8 @@ const CACHE_KEY = "omasla.public-catalog.v1"
 interface CatalogContextValue {
   data: PublicCatalog | null
   now: number
+  /** Device clock at the last tick, to compare with `savedAt`. */
+  localNow: number
   savedAt: number | null
   loaded: boolean
   error: string | null
@@ -133,6 +135,7 @@ export function CatalogProvider({ children }: PropsWithChildren) {
     () => ({
       data: snapshot?.data ?? null,
       now: snapshot ? catalogTime(snapshot, tick) : tick,
+      localNow: tick,
       savedAt: snapshot?.savedAt ?? null,
       loaded: loaded || (offline && cacheRead),
       error,

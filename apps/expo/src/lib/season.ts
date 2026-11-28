@@ -68,3 +68,10 @@ export const outingLabels: Record<Outing["kind"], string> = {
   "mardi-gras": "Mardi gras",
   cendres: "Mercredi des Cendres",
 }
+/** True when the outing is the first Sunday of the season (e.g. 3 January 2027). */
+export function opensSeason(outing: Outing) {
+  return (
+    outing.kind === "dimanche" &&
+    outing.date.getTime() === season(outing.date.getFullYear()).start.getTime()
+  )
+}

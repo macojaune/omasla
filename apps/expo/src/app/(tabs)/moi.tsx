@@ -1,21 +1,18 @@
 import { useEffect, useState } from "react"
-import {
-  Linking,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native"
+import { Linking, Platform, ScrollView, StyleSheet, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
 import { useConvexAuth, useQuery } from "convex/react"
 
-import type { Id, SessionView } from "@omasla/convex"
 import { api } from "@omasla/convex"
 
+import BroadcastCard, {
+  AutoStopRules,
+  endLabels,
+} from "~/components/broadcast-card"
+import GroupEmblem from "~/components/group-emblem"
 import MapSources from "~/components/map-sources"
-import { saveAuthReturn } from "~/lib/auth-return"
+import SignInPanel from "~/components/sign-in-panel"
 import {
   cancelPendingActivations,
   markStopping,
@@ -24,6 +21,7 @@ import {
   stopNativeLocation,
   withTrackingTransition,
 } from "~/lib/background-location"
+import { ownsTrackingFeedback } from "~/lib/broadcast-status"
 import { useCatalog } from "~/lib/catalog"
 import { useLocationHandler } from "~/lib/useLocation"
 import { authenticatedClient, friendlyError } from "~/lib/write-api"
@@ -38,176 +36,12 @@ import {
 } from "~/theme/ui"
 import { useNativeAuth } from "~/utils/auth"
 
-const endLabels: Record<string, string> = {
-  manual: "Arrêté par le membre du groupe",
-  moderation: "Arrêté par l’équipe sur le terrain",
-  gps_failed: "Localisation indisponible",
-  logout: "Compte déconnecté",
-  duration: "Durée maximale atteinte",
-  zone: "Sortie de la zone de suivi",
-  speed: "Vitesse excessive confirmée",
-  revoked: "Autorisation de partage retirée",
-}
-function Handoff({
-  session,
-  accountId,
-  installation,
-  onAccept,
-  blocked,
-}: {
-  session: SessionView
-  accountId: Id<"accounts">
-  installation: string | null
-  onAccept: () => void
-  blocked: boolean
-}) {
-  const refs = useQuery(api.sessions.referents, { groupId: session.groupId })
-  const events = useQuery(api.sessions.events, { sessionId: session.id })
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const c = usePalette()
-  const { canWrite } = useCatalog()
-  async function offer(targetAccountId?: Id<"accounts">) {
-    setBusy(true)
-    setError(null)
-    try {
-      const client = await authenticatedClient()
-      const args = {
-        sessionId: session.id,
-        deviceId: session.deviceId,
-        generation: session.generation,
-      }
-      if (targetAccountId)
-        await client.mutation(api.sessions.offerHandoff, {
-          ...args,
-          targetAccountId,
-        })
-      else await client.mutation(api.sessions.cancelHandoff, args)
-    } catch (failure) {
-      setError(friendlyError(failure))
-    } finally {
-      setBusy(false)
-    }
-  }
-  return (
-    <View style={styles.section}>
-      {session.speedWarningAt && (
-        <Notice tone="warning">
-          Ta vitesse semble trop élevée pour le défilé. Si elle reste élevée, le
-          suivi sera arrêté automatiquement.
-        </Notice>
-      )}
-      {session.handoffToAccountId === accountId && !session.isEmitter && (
-        <>
-          <Notice>Un membre du groupe te propose de prendre le relais.</Notice>
-          <Button
-            title="Accepter le relais"
-            icon="check"
-            disabled={blocked || !canWrite}
-            onPress={onAccept}
-          />
-        </>
-      )}
-      {session.isEmitter &&
-        session.deviceId === installation &&
-        session.status === "active" && (
-          <>
-            <Label style={{ fontSize: 17, fontWeight: "700", marginTop: 8 }}>
-              Passer le relais
-            </Label>
-            {session.handoffToAccountId ? (
-              <>
-                <Label muted>
-                  En attente de l’acceptation de{" "}
-                  {refs?.find(
-                    (ref) => ref.accountId === session.handoffToAccountId,
-                  )?.displayName ?? "l’autre membre"}
-                  . Tu continues à diffuser jusque-là.
-                </Label>
-                <Button
-                  title="Annuler la proposition"
-                  variant="secondary"
-                  busy={busy}
-                  disabled={blocked || !canWrite}
-                  onPress={() => void offer()}
-                />
-              </>
-            ) : (
-              <>
-                {refs
-                  ?.filter((ref) => ref.accountId !== accountId)
-                  .map((ref) => (
-                    <Pressable
-                      key={ref.accountId}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Proposer le relais à ${ref.displayName}`}
-                      accessibilityState={{
-                        disabled: busy || blocked || !canWrite,
-                        busy,
-                      }}
-                      disabled={busy || blocked || !canWrite}
-                      onPress={() => void offer(ref.accountId)}
-                      style={({ pressed }) => [
-                        s.referentRow,
-                        {
-                          borderBottomColor: c.line,
-                          opacity:
-                            busy || blocked || !canWrite
-                              ? 0.5
-                              : pressed
-                                ? 0.65
-                                : 1,
-                        },
-                      ]}
-                    >
-                      <Label style={{ color: c.primary, flex: 1 }}>
-                        Proposer à {ref.displayName}
-                      </Label>
-                      <Icon name="chevron" color={c.muted} size={16} />
-                    </Pressable>
-                  ))}
-                {refs?.filter((ref) => ref.accountId !== accountId).length ===
-                  0 && (
-                  <Label muted style={{ fontSize: 14 }}>
-                    Aucun autre membre habilité pour ce groupe.
-                  </Label>
-                )}
-              </>
-            )}
-          </>
-        )}
-      {error && <Notice tone="error">{error}</Notice>}
-      {events && events.length > 0 && (
-        <View style={{ gap: 8, paddingTop: 8 }}>
-          <Label muted style={{ fontSize: 13, fontWeight: "700" }}>
-            Derniers événements
-          </Label>
-          {events
-            .slice(-3)
-            .reverse()
-            .map((event) => (
-              <View key={event.id} style={{ flexDirection: "row", gap: 10 }}>
-                <Icon name="clock" color={c.muted} size={16} />
-                <Label muted style={{ fontSize: 13, lineHeight: 19, flex: 1 }}>
-                  {new Date(event.occurredAt).toLocaleTimeString("fr-FR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}{" "}
-                  ·{" "}
-                  {event.type === "speed_warning"
-                    ? "Avertissement de vitesse"
-                    : event.type === "handoff"
-                      ? "Relais accepté"
-                      : (endLabels[event.reason ?? ""] ?? "Suivi terminé")}
-                </Label>
-              </View>
-            ))}
-        </View>
-      )}
-    </View>
-  )
-}
-export default function Account() {
+const guestBenefits = [
+  "Ajoute la position d’un groupe que tu vois passer.",
+  "Membre d’un groupe ? Diffuse sa position pendant la sortie.",
+] as const
+
+export default function Moi() {
   const c = usePalette()
   const auth = useNativeAuth()
   const convexAuth = useConvexAuth()
@@ -226,18 +60,7 @@ export default function Account() {
         .then((client) => client.mutation(api.accounts.ensure, {}))
         .catch((failure) => setError(friendlyError(failure)))
   }, [convexAuth.isAuthenticated])
-  async function login() {
-    setBusy(true)
-    setError(null)
-    try {
-      await saveAuthReturn()
-      await auth.signIn()
-    } catch (failure) {
-      setError(friendlyError(failure))
-    } finally {
-      setBusy(false)
-    }
-  }
+  // Logout stops the broadcast first; this order is unchanged.
   async function logout() {
     cancelPendingActivations()
     let locationStopped = false
@@ -257,21 +80,46 @@ export default function Account() {
     } catch {
       setError(
         locationStopped
-          ? "Le partage local est arrêté. La déconnexion du compte reste à confirmer : rétablis le réseau et réessaie."
-          : "L’arrêt du partage n’a pas pu être confirmé. Désactive la localisation dans les réglages et réessaie.",
+          ? "La diffusion est arrêtée sur ce téléphone. La déconnexion du compte reste à confirmer : rétablis le réseau et réessaie."
+          : "L’arrêt de la diffusion n’a pas pu être confirmé. Désactive la localisation dans les réglages et réessaie.",
       )
     } finally {
       setBusy(false)
     }
   }
+  const groups = tracking.mine?.groups ?? []
   const active =
     tracking.mine?.sessions.filter((session) => session.status === "active") ??
     []
+  const live = groups
+    .flatMap((group) => {
+      const session = active.find((item) => item.groupId === group.id)
+      return session ? [{ group, session }] : []
+    })
+    // This phone's own broadcast comes first.
+    .sort(
+      (a, b) =>
+        Number(b.session.deviceId === tracking.installation) -
+        Number(a.session.deviceId === tracking.installation),
+    )
+  const idle = groups.filter(
+    (group) => !active.some((session) => session.groupId === group.id),
+  )
   const ended =
     tracking.mine?.sessions
       .filter((session) => session.status === "ended")
       .sort((a, b) => (b.endedAt ?? 0) - (a.endedAt ?? 0))
       .slice(0, 3) ?? []
+  const isMember = groups.length > 0
+  const trackingFeedbackInCard = live.some(({ session }) =>
+    ownsTrackingFeedback(session, tracking.installation, account?.id),
+  )
+  const broadcastingHere = live.some(
+    ({ session }) =>
+      session.isEmitter && session.deviceId === tracking.installation,
+  )
+  const publicGroup = (id: string) =>
+    catalog.data?.groups.find((item) => item.id === id)
   return (
     <SafeAreaView
       edges={["top", "left", "right"]}
@@ -281,49 +129,15 @@ export default function Account() {
         <Label accessibilityRole="header" style={styles.title}>
           Moi
         </Label>
-        {auth.isAuthenticated && (
-          <View style={[s.profile, { borderBottomColor: c.line }]}>
-            <Icon name="person" color={c.primary} size={42} />
-            <View style={{ flex: 1, gap: 4 }}>
-              <Label style={s.profileName}>
-                {auth.user?.name ?? "Ton compte"}
-              </Label>
-              <Label muted style={s.caption}>
-                Observations et suivi des groupes
-              </Label>
-            </View>
-          </View>
-        )}
-        {auth.isLoading ? (
+        {auth.isLoading && !auth.isAuthenticated ? (
           <LoadingIndicator />
         ) : !auth.isAuthenticated ? (
           <>
-            <View style={s.intro}>
-              <Icon name="person" color={c.primary} size={48} />
-              <Label accessibilityRole="header" style={s.title}>
-                Contribuer au suivi.
-              </Label>
-              <Label muted>
-                Ajoute la position du groupe que tu vois près de toi. Si tu es
-                membre d’un groupe, c’est ici que tu diffuses sa position.
-              </Label>
-            </View>
-            <Button
-              title="Se connecter"
-              icon="person"
-              busy={busy}
-              disabled={busy || !catalog.canWrite}
-              onPress={() => void login()}
+            <SignInPanel
+              title="Connecte-toi pour contribuer."
+              intro="Un compte te permet d’aider le public à retrouver les groupes."
+              benefits={guestBenefits}
             />
-            <Label muted style={s.caption}>
-              Apple, Google ou email, selon les options disponibles à la
-              connexion.
-            </Label>
-            {catalog.offline && (
-              <Notice tone="warning">
-                Reconnecte-toi au réseau pour accéder à ton compte.
-              </Notice>
-            )}
             <View style={[s.guestFooter, { borderTopColor: c.line }]}>
               <Label muted style={s.caption}>
                 Pour retrouver les groupes, aucun compte n’est nécessaire.
@@ -337,156 +151,94 @@ export default function Account() {
           </>
         ) : (
           <>
-            {catalog.offline && (
-              <Notice tone="warning">
-                Hors ligne. Les actions de diffusion nécessitent le réseau. Tu
-                peux toujours arrêter le partage sur ce téléphone.
-              </Notice>
-            )}
-            <View style={styles.section}>
-              <Label accessibilityRole="header" style={s.sectionTitle}>
-                Mes groupes à suivre
-              </Label>
-              <Label muted style={s.caption}>
-                Démarre la diffusion uniquement quand tu es avec le groupe. Il
-                continue écran verrouillé.
-              </Label>
-              <Label muted style={s.caption}>
-                Autorise les notifications pour recevoir les avertissements de
-                vitesse écran verrouillé.
-              </Label>
-            </View>
-            {!tracking.mine && <LoadingIndicator />}
-            {tracking.mine?.groups.length === 0 && (
-              <Notice>
-                Tu n’es membre d’aucun groupe pour le moment. Tu peux toujours
-                consulter les groupes et ajouter une position hors direct.
-              </Notice>
-            )}
-            {tracking.notificationsAllowed === false && (
-              <Notice tone="warning">
-                Les notifications de suivi ne sont pas autorisées. Les
-                avertissements restent visibles dans cet onglet ; active les
-                notifications dans les réglages pour les recevoir écran
-                verrouillé.
-              </Notice>
-            )}
-            {tracking.error && <Notice tone="error">{tracking.error}</Notice>}
-            {tracking.error && Platform.OS !== "web" && (
-              <Button
-                title="Ouvrir les réglages"
-                variant="secondary"
-                onPress={() => void Linking.openSettings()}
+            {live.map(({ group, session }) => (
+              <BroadcastCard
+                key={session.id}
+                session={session}
+                title={group.title}
+                group={publicGroup(group.id)}
+                accountId={account?.id}
+                tracking={tracking}
+                blocked={busy}
               />
-            )}
-            {tracking.local?.pendingStop && (
-              <Notice tone="warning">
-                {tracking.running
-                  ? "L’arrêt de la collecte reste à confirmer sur ce téléphone. Réessaie ou ouvre les réglages."
-                  : "La collecte locale est arrêtée. Confirme l’arrêt auprès du service pour libérer le groupe."}
-              </Notice>
-            )}
-            {tracking.mine?.groups.map((group) => {
-              const session = active.find((item) => item.groupId === group.id)
-              const ownDevice =
-                session?.isEmitter && session.deviceId === tracking.installation
-              return (
-                <View
-                  key={group.id}
-                  style={[s.session, { borderTopColor: c.line }]}
-                >
-                  <View style={s.sessionHeading}>
-                    <Icon
-                      name="signal"
-                      color={session ? c.primary : c.muted}
-                      size={24}
-                    />
-                    <Label style={[s.sectionTitle, { flex: 1 }]}>
-                      {group.title}
+            ))}
+            {!tracking.mine && <LoadingIndicator />}
+            {isMember && (
+              <View style={styles.section}>
+                {idle.length > 0 && (
+                  <>
+                    <Label accessibilityRole="header" style={s.sectionTitle}>
+                      Diffuser
                     </Label>
-                  </View>
-                  {!session ? (
-                    <Button
-                      title="Démarrer le suivi"
-                      icon="signal"
-                      disabled={
-                        busy || !catalog.canWrite || Boolean(tracking.local)
-                      }
-                      busy={tracking.busy}
-                      onPress={() => void tracking.start(group.id)}
-                    />
-                  ) : (
-                    <>
-                      <Label style={{ color: c.primary, fontWeight: "700" }}>
-                        {ownDevice
-                          ? tracking.running &&
-                            tracking.local?.sessionId === session.id
-                            ? "Partage sur ce téléphone"
-                            : "Session ouverte · partage à vérifier"
-                          : "Un membre du groupe partage la position"}
-                      </Label>
-                      <Label muted style={{ fontSize: 14 }}>
-                        Fin maximale à{" "}
-                        {new Date(session.expiresAt).toLocaleTimeString(
-                          "fr-FR",
-                          { hour: "2-digit", minute: "2-digit" },
+                    <Label muted style={s.caption}>
+                      Démarre uniquement quand tu es avec le groupe. La
+                      diffusion continue écran verrouillé ; autorise les
+                      notifications pour recevoir ses avertissements.
+                    </Label>
+                  </>
+                )}
+                {!trackingFeedbackInCard && tracking.error && (
+                  <>
+                    <Notice tone="error">{tracking.error}</Notice>
+                    {Platform.OS !== "web" && (
+                      <Button
+                        title="Ouvrir les réglages"
+                        variant="secondary"
+                        onPress={() => void Linking.openSettings()}
+                      />
+                    )}
+                  </>
+                )}
+                {!broadcastingHere && tracking.local?.pendingStop && (
+                  <Notice tone="warning">
+                    {tracking.running
+                      ? "L’arrêt de la diffusion reste à confirmer sur ce téléphone. Réessaie ou ouvre les réglages."
+                      : "La diffusion est arrêtée sur ce téléphone. Confirme l’arrêt auprès du service pour libérer le groupe."}
+                  </Notice>
+                )}
+                {idle.length > 0 && catalog.offline && (
+                  <Notice tone="warning">
+                    Hors ligne : démarrer la diffusion demande le réseau.
+                  </Notice>
+                )}
+                {idle.map((group) => {
+                  const known = publicGroup(group.id)
+                  return (
+                    <View
+                      key={group.id}
+                      style={[s.groupRow, { borderTopColor: c.line }]}
+                    >
+                      <View style={s.groupHeading}>
+                        {known ? (
+                          <GroupEmblem group={known} size={40} />
+                        ) : (
+                          <Icon name="signal" color={c.muted} size={24} />
                         )}
-                        .
-                      </Label>
-                      {ownDevice && (
-                        <>
-                          {!tracking.running &&
-                            !tracking.local?.pendingStop && (
-                              <Button
-                                title="Reprendre sur ce téléphone"
-                                disabled={busy || !catalog.canWrite}
-                                busy={tracking.busy}
-                                onPress={() => void tracking.resume(session)}
-                              />
-                            )}
-                          <Button
-                            title={
-                              tracking.local?.pendingStop
-                                ? "Confirmer l’arrêt"
-                                : "Arrêter le suivi"
-                            }
-                            icon="stop"
-                            variant="danger"
-                            disabled={busy}
-                            busy={tracking.busy}
-                            onPress={() =>
-                              void tracking.stop("manual", session)
-                            }
-                          />
-                        </>
-                      )}
-                      {account && (
-                        <Handoff
-                          session={session}
-                          blocked={busy || tracking.busy}
-                          accountId={account.id}
-                          installation={tracking.installation}
-                          onAccept={() => void tracking.accept(session)}
-                        />
-                      )}
-                    </>
-                  )}
-                </View>
-              )
-            })}
-            {ended.length > 0 && (
+                        <Label style={[s.rowTitle, { flex: 1 }]}>
+                          {group.title}
+                        </Label>
+                      </View>
+                      <Button
+                        title="Démarrer la diffusion"
+                        icon="signal"
+                        disabled={
+                          busy || !catalog.canWrite || Boolean(tracking.local)
+                        }
+                        busy={tracking.busy}
+                        onPress={() => void tracking.start(group.id)}
+                      />
+                    </View>
+                  )
+                })}
+                {live.length === 0 && <AutoStopRules />}
+              </View>
+            )}
+            {isMember && ended.length > 0 && (
               <View
-                style={[
-                  styles.section,
-                  {
-                    borderTopWidth: StyleSheet.hairlineWidth,
-                    borderColor: c.line,
-                    paddingTop: 24,
-                  },
-                ]}
+                style={[styles.section, s.divided, { borderColor: c.line }]}
               >
                 <Label accessibilityRole="header" style={s.sectionTitle}>
-                  Derniers suivis
+                  Dernières diffusions
                 </Label>
                 {ended.map((session) => (
                   <View
@@ -494,12 +246,14 @@ export default function Account() {
                     style={[s.historyRow, { borderBottomColor: c.line }]}
                   >
                     <Label style={{ fontWeight: "700" }}>
-                      {catalog.data?.groups.find(
-                        (group) => group.id === session.groupId,
-                      )?.title ?? "Groupe"}
+                      {groups.find((group) => group.id === session.groupId)
+                        ?.title ??
+                        publicGroup(session.groupId)?.title ??
+                        "Groupe"}
                     </Label>
                     <Label muted style={{ fontSize: 14 }}>
-                      {endLabels[session.endReason ?? ""] ?? "Suivi terminé"}
+                      {endLabels[session.endReason ?? ""] ??
+                        "Diffusion terminée"}
                       {session.endedAt
                         ? ` · ${new Date(session.endedAt).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`
                         : ""}
@@ -508,7 +262,38 @@ export default function Account() {
                 ))}
               </View>
             )}
-            <View style={[s.logout, { borderTopColor: c.line }]}>
+            <View style={[styles.section, s.divided, { borderColor: c.line }]}>
+              <Label accessibilityRole="header" style={s.sectionTitle}>
+                Mon compte
+              </Label>
+              <View style={s.profile}>
+                <Icon name="person" color={c.primary} size={40} />
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Label style={s.rowTitle}>
+                    {auth.user?.name ?? "Ton compte"}
+                  </Label>
+                  <Label muted style={s.caption}>
+                    {isMember
+                      ? groups.length === 1
+                        ? `Membre de ${groups[0]?.title}`
+                        : `Membre de ${groups.length} groupes`
+                      : "Tu peux ajouter la position des groupes que tu vois."}
+                  </Label>
+                </View>
+              </View>
+              {tracking.mine && !isMember && (
+                <>
+                  <Button
+                    title="Ajouter une position"
+                    icon="plus"
+                    onPress={() => router.push("/ajouter")}
+                  />
+                  <Label muted style={s.caption}>
+                    Tu fais partie d’un groupe ? Sa diffusion apparaîtra ici
+                    quand ton accès sera ouvert.
+                  </Label>
+                </>
+              )}
               <Button
                 title="Se déconnecter"
                 disabled={tracking.busy}
@@ -516,6 +301,11 @@ export default function Account() {
                 busy={busy}
                 onPress={() => void logout()}
               />
+              {broadcastingHere && (
+                <Label muted style={s.caption}>
+                  La diffusion en cours sera arrêtée avant la déconnexion.
+                </Label>
+              )}
             </View>
           </>
         )}
@@ -528,23 +318,7 @@ export default function Account() {
 
 const s = StyleSheet.create({
   content: { maxWidth: 600, paddingTop: 12, paddingBottom: 28, gap: 24 },
-  intro: { gap: 18, paddingTop: 14, paddingBottom: 4 },
-  title: {
-    fontSize: 28,
-    lineHeight: 34,
-    fontWeight: "700",
-    letterSpacing: -0.5,
-  },
   caption: { fontSize: 14, lineHeight: 21 },
-  profile: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    paddingTop: 6,
-    paddingBottom: 24,
-  },
-  profileName: { fontSize: 22, lineHeight: 28, fontWeight: "600" },
   guestFooter: {
     gap: 16,
     marginTop: 4,
@@ -552,33 +326,24 @@ const s = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   sectionTitle: {
-    fontSize: 20,
-    lineHeight: 26,
-    fontWeight: "600",
-    letterSpacing: -0.2,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "700",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
   },
-  session: {
+  rowTitle: { fontSize: 17, lineHeight: 23, fontWeight: "600" },
+  divided: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 24 },
+  groupRow: {
     borderTopWidth: StyleSheet.hairlineWidth,
-    paddingTop: 24,
-    gap: 16,
-  },
-  sessionHeading: { flexDirection: "row", alignItems: "center", gap: 12 },
-  referentRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    paddingTop: 16,
     gap: 12,
-    minHeight: 52,
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
   },
+  groupHeading: { flexDirection: "row", alignItems: "center", gap: 12 },
+  profile: { flexDirection: "row", alignItems: "center", gap: 14 },
   historyRow: {
     gap: 4,
     paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  logout: {
-    marginTop: 8,
-    paddingTop: 24,
-    borderTopWidth: StyleSheet.hairlineWidth,
   },
 })
