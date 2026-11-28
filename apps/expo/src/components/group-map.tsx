@@ -1,9 +1,8 @@
-import type { CameraRef } from "@maplibre/maplibre-react-native"
+import type { CameraRef, MapRef } from "@maplibre/maplibre-react-native"
 import { useEffect, useMemo, useRef, useState } from "react"
 import {
   AccessibilityInfo,
   Platform,
-  Pressable,
   StyleSheet,
   useColorScheme,
   useWindowDimensions,
@@ -20,6 +19,7 @@ import {
 import type { PublicCatalog, PublicGroup } from "@omasla/convex"
 import { positionFreshness } from "@omasla/convex"
 
+import type { Bounds } from "~/lib/map-view"
 import GroupBanner, { GROUP_BANNER_OFFSET } from "~/components/group-banner"
 import { createCarnivalMapStyle } from "~/lib/carnival-map-style"
 import { ageLabel, positionLabel, visiblePosition } from "~/lib/catalog-model"
@@ -47,9 +47,19 @@ export interface GroupMapProps {
   onPan?: () => void
   onMapPress?: () => void
   userLocation?: Coordinate | null
+  /** Visible frame after each settled move, and once the map has loaded. */
+  onBoundsChange?: (bounds: Bounds) => void
+  /** Buildings in relief (3D). Controlled by the screen's map controls. */
+  relief?: boolean
+  /** A pitch gesture switches between flat and relief. */
+  onReliefChange?: (relief: boolean) => void
 }
 
 const initialCenter: [number, number] = [-61.5337, 16.2375]
+// Wide enough to see the centre of Pointe-à-Pitre at once.
+const OVERVIEW_ZOOM = 15
+// Below this zoom, flags drop their name plaque to avoid a pile-up.
+const COMPACT_ZOOM = 14.4
 const light = {
   position: [1.5, 220, 35] as [number, number, number],
   color: "#fff9e9",
@@ -79,19 +89,26 @@ export default function GroupMap({
   onPan,
   onMapPress,
   userLocation,
+  onBoundsChange,
+  relief: reliefProp,
+  onReliefChange,
 }: GroupMapProps) {
   const c = usePalette()
   const { fontScale } = useWindowDimensions()
   const dark = useColorScheme() === "dark"
   const safe = useSafeAreaInsets()
   const camera = useRef<CameraRef>(null)
+  const map = useRef<MapRef>(null)
   const [ready, setReady] = useState(false)
   const [rendered, setRendered] = useState(false)
   const [slow, setSlow] = useState(false)
   const [revision, setRevision] = useState(0)
   const [reduceMotion, setReduceMotion] = useState(true)
-  const [relief, setRelief] = useState(true)
-  const [zoom, setZoom] = useState(16.4)
+  const [ownRelief, setOwnRelief] = useState(true)
+  const relief = reliefProp ?? ownRelief
+  const gestureRelief = useRef<boolean | null>(null)
+  const appliedRelief = useRef(relief)
+  const [zoom, setZoom] = useState(OVERVIEW_ZOOM)
   const [size, setSize] = useState({ width: 0, height: 0 })
   const handled = useRef<{
     selection?: string
@@ -212,7 +229,7 @@ export default function GroupMap({
       if (!validCoordinate(candidate)) return
       camera.current.easeTo({
         center: [candidate.longitude, candidate.latitude],
-        zoom: kind === "overview" ? 16.4 : 17.2,
+        zoom: kind === "overview" ? OVERVIEW_ZOOM + 0.6 : 17.2,
         ...options,
       })
     }
@@ -235,6 +252,30 @@ export default function GroupMap({
     fontScale,
     relief,
   ])
+  useEffect(() => {
+    if (appliedRelief.current === relief) return
+    appliedRelief.current = relief
+    // A pitch gesture already put the camera where the user wanted it.
+    if (gestureRelief.current === relief) {
+      gestureRelief.current = null
+      return
+    }
+    gestureRelief.current = null
+    void camera.current
+      ?.setStop({
+        pitch: relief ? 42 : 0,
+        duration: reduceMotion ? 0 : 450,
+        padding,
+      })
+      .catch(() => undefined)
+  }, [relief, reduceMotion, padding])
+  function reportBounds() {
+    if (!onBoundsChange) return
+    void map.current
+      ?.getBounds()
+      .then(onBoundsChange)
+      .catch(() => undefined)
+  }
   return (
     <View
       style={[s.wrap, { backgroundColor: c.background }]}
@@ -242,6 +283,7 @@ export default function GroupMap({
     >
       <Map
         key={revision}
+        ref={map}
         style={StyleSheet.absoluteFill}
         mapStyle={style}
         light={light}
@@ -257,6 +299,7 @@ export default function GroupMap({
         onDidFinishRenderingMapFully={() => {
           setRendered(true)
           setSlow(false)
+          reportBounds()
         }}
         onDidFailLoadingMap={() => {
           setReady(false)
@@ -267,9 +310,14 @@ export default function GroupMap({
           if (event.nativeEvent.userInteraction) onPan?.()
         }}
         onRegionDidChange={(event) => {
-          setZoom(event.nativeEvent.zoom)
-          if (event.nativeEvent.userInteraction)
-            setRelief(event.nativeEvent.pitch > 10)
+          const view = event.nativeEvent
+          setZoom(view.zoom)
+          onBoundsChange?.(view.bounds)
+          if (view.userInteraction && view.pitch > 10 !== relief) {
+            gestureRelief.current = view.pitch > 10
+            setOwnRelief(view.pitch > 10)
+            onReliefChange?.(view.pitch > 10)
+          }
         }}
         onPress={onMapPress}
         accessibilityLabel="Carte des groupes, bâtiments en relief à Pointe-à-Pitre"
@@ -278,7 +326,7 @@ export default function GroupMap({
           ref={camera}
           initialViewState={{
             center: initialCenter,
-            zoom: 16.4,
+            zoom: OVERVIEW_ZOOM,
             pitch: 42,
             bearing: -12,
           }}
@@ -301,7 +349,7 @@ export default function GroupMap({
             <GroupBanner
               group={group}
               selected={selected}
-              compact={zoom < 16}
+              compact={zoom < COMPACT_ZOOM}
               state={state}
               label={positionLabel(group, catalog, now)}
               age={ageLabel(position, now)}
@@ -355,39 +403,6 @@ export default function GroupMap({
           </Marker>
         )}
       </Map>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={
-          relief
-            ? "Passer à la carte à plat"
-            : "Afficher les bâtiments en relief"
-        }
-        onPress={() => {
-          void camera.current
-            ?.setStop({
-              pitch: relief ? 0 : 42,
-              duration: reduceMotion ? 0 : 450,
-              padding,
-            })
-            .catch(() => undefined)
-          setRelief(!relief)
-        }}
-        style={[
-          s.relief,
-          {
-            top: safe.top + 82,
-            right: safe.right + 16,
-            backgroundColor: c.surface,
-          },
-        ]}
-      >
-        <Label
-          maxFontSizeMultiplier={1.5}
-          style={{ fontSize: 15, fontWeight: "700" }}
-        >
-          {relief ? "2D" : "3D"}
-        </Label>
-      </Pressable>
       {!rendered && slow && (
         <View
           style={[
@@ -404,7 +419,7 @@ export default function GroupMap({
             La carte prend du temps à charger
           </Label>
           <Label muted style={s.messageText}>
-            Tu peux consulter les groupes dans la liste.
+            Tu peux retrouver les groupes dans l’onglet Groupes.
           </Label>
           <Button
             title="Réessayer la carte"
@@ -423,19 +438,6 @@ export default function GroupMap({
 }
 const s = StyleSheet.create({
   wrap: { flex: 1 },
-  relief: {
-    position: "absolute",
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#142e32",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 3,
-  },
   userPosition: { width: 18, height: 18, borderRadius: 9, borderWidth: 3 },
   loadError: { position: "absolute", gap: 10, padding: 18, borderRadius: 16 },
   messageTitle: { fontSize: 15, lineHeight: 20, fontWeight: "600" },

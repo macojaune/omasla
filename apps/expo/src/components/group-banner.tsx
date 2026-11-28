@@ -45,11 +45,20 @@ function shortAge(age: string) {
 }
 
 const stateLabels: Record<GroupBannerState, string> = {
-  live: "Live",
-  community: "Observé",
-  aging: "Ancienne",
+  live: "En direct",
+  community: "Signalé",
+  aging: "Ancien",
   legacy: "Dernier point",
 }
+// Read on the group's own colour, whatever the theme.
+const statusDots: Record<GroupBannerState, string> = {
+  live: "#3DDC84",
+  community: "#FFFFFF",
+  aging: "#FFD58A",
+  legacy: "rgba(255,255,255,0.6)",
+}
+// An ageing point stays visible but steps back from the current ones.
+const AGING_OPACITY = 0.55
 
 export default function GroupBanner({
   group,
@@ -72,8 +81,7 @@ export default function GroupBanner({
   const { fontScale } = useWindowDimensions()
   const identity = groupIdentity(group)
   const isCompact = compact && !selected
-  const statusColor =
-    state === "aging" ? c.warning : state === "legacy" ? c.muted : c.success
+  const live = state === "live"
   return (
     <Pressable
       collapsable={false}
@@ -91,7 +99,9 @@ export default function GroupBanner({
         {
           width: groupBannerWidth(selected, compact),
           height: groupBannerHeight(selected, compact),
-          opacity: pressed ? 0.78 : 1,
+          opacity:
+            (state === "aging" && !selected ? AGING_OPACITY : 1) *
+            (pressed ? 0.78 : 1),
         },
       ]}
     >
@@ -129,16 +139,13 @@ export default function GroupBanner({
             style={[
               s.plaque,
               {
-                backgroundColor: selected ? identity.color : c.surface,
+                backgroundColor: identity.color,
+                borderColor: selected ? c.ink : "transparent",
                 shadowOpacity: c.isDark ? 0.3 : 0.14,
               },
             ]}
           >
-            <Text
-              numberOfLines={1}
-              maxFontSizeMultiplier={1.5}
-              style={[s.name, { color: selected ? "#FFFFFF" : c.ink }]}
-            >
+            <Text numberOfLines={1} maxFontSizeMultiplier={1.5} style={s.name}>
               {identity.name}
             </Text>
             <View style={s.status}>
@@ -146,23 +153,37 @@ export default function GroupBanner({
                 style={[
                   s.statusDot,
                   {
-                    backgroundColor: statusColor,
-                    borderColor: selected ? "#FFFFFF" : "transparent",
+                    backgroundColor: statusDots[state],
+                    borderColor: live ? "#FFFFFF" : "transparent",
                   },
                 ]}
               />
               <Text
                 numberOfLines={1}
                 maxFontSizeMultiplier={1.5}
-                style={[
-                  s.statusText,
-                  { color: selected ? "#FFFFFF" : statusColor },
-                ]}
+                style={s.statusText}
               >
                 {stateLabels[state]} · {shortAge(age)}
               </Text>
             </View>
+            {live && (
+              <View
+                style={[
+                  s.livePastille,
+                  { backgroundColor: statusDots.live, borderColor: c.surface },
+                ]}
+              />
+            )}
           </View>
+        )}
+        {live && isCompact && (
+          <View
+            style={[
+              s.livePastille,
+              s.compactPastille,
+              { backgroundColor: statusDots.live, borderColor: c.surface },
+            ]}
+          />
         )}
         <View
           style={[
@@ -200,13 +221,14 @@ const s = StyleSheet.create({
     paddingHorizontal: 9,
     paddingVertical: 6,
     borderRadius: 12,
+    borderWidth: 2,
     gap: 3,
     shadowColor: "#152B2A",
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 5,
     elevation: 3,
   },
-  name: { fontSize: 13, fontWeight: "700", lineHeight: 17 },
+  name: { fontSize: 13, fontWeight: "700", lineHeight: 17, color: "#FFFFFF" },
   status: {
     alignSelf: "flex-start",
     flexDirection: "row",
@@ -215,9 +237,9 @@ const s = StyleSheet.create({
     maxWidth: "100%",
   },
   statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 7,
+    height: 7,
+    borderRadius: 4,
     borderWidth: 1,
     flexShrink: 0,
   },
@@ -226,7 +248,18 @@ const s = StyleSheet.create({
     lineHeight: 14,
     fontWeight: "600",
     flexShrink: 1,
+    color: "rgba(255,255,255,0.92)",
   },
+  livePastille: {
+    position: "absolute",
+    top: -5,
+    right: -5,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    borderWidth: 2.5,
+  },
+  compactPastille: { top: 3, left: 34, right: undefined },
   gpsDot: {
     position: "absolute",
     left: 4,
