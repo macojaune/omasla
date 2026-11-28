@@ -40,6 +40,7 @@ import {
   spotCounts,
 } from "~/lib/map-view"
 import { daysUntil, nextOuting, outingLabels } from "~/lib/season"
+import { useFavorites } from "~/lib/use-favorites"
 import {
   Button,
   Icon,
@@ -138,20 +139,23 @@ export default function MapScreen() {
     () => (data ? spotCounts(data, catalog.now) : null),
     [data, catalog.now],
   )
+  // « Mes groupes » come first in the carousel too (MAR-454).
+  const favorites = useFavorites()
   const markers = useMemo(
     () => (data ? mapGroups(data, catalog.now, { filter, query: search }) : []),
     [data, catalog.now, filter, search],
   )
-  const carousel = useMemo(
-    () =>
-      data
-        ? carouselGroups(markers, data, catalog.now, {
-            bounds,
-            from: userLocation,
-          })
-        : [],
-    [data, markers, catalog.now, bounds, userLocation],
-  )
+  const carousel = useMemo(() => {
+    if (!data) return []
+    const items = carouselGroups(markers, data, catalog.now, {
+      bounds,
+      from: userLocation,
+    })
+    return [
+      ...items.filter((item) => favorites.set.has(item.group.id)),
+      ...items.filter((item) => !favorites.set.has(item.group.id)),
+    ]
+  }, [data, markers, catalog.now, bounds, userLocation, favorites.set])
   const results = useMemo(
     () => (data ? searchGroups(data, catalog.now, search) : []),
     [data, catalog.now, search],
