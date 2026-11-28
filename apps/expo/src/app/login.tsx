@@ -4,7 +4,9 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
 
 import ScreenHeader from "~/components/screen-header"
+import SignInPanel from "~/components/sign-in-panel"
 import { consumeAuthReturn } from "~/lib/auth-return"
+import { useCatalog } from "~/lib/catalog"
 import {
   Button,
   Icon,
@@ -21,6 +23,7 @@ import { useNativeAuth } from "~/utils/auth"
 export default function LoginReturn() {
   const auth = useNativeAuth()
   const router = useRouter()
+  const catalog = useCatalog()
   const c = usePalette()
   useEffect(() => {
     if (!auth.isAuthenticated || auth.isLoading) return
@@ -32,26 +35,49 @@ export default function LoginReturn() {
     <SafeAreaView style={[styles.page, { backgroundColor: c.surface }]}>
       <ScreenHeader title="Connexion" />
       <ScrollView contentContainerStyle={[styles.content, s.content]}>
-        <View style={s.intro}>
-          <Icon name="person" color={c.primary} size={44} />
-          <Label accessibilityRole="header" style={s.title}>
-            {auth.error ? "Reprenons la connexion." : "Retrouve ton compte."}
-          </Label>
-          <Label muted>
-            {auth.error
-              ? "Reviens à l’onglet Moi pour relancer la connexion."
-              : "Termine la connexion dans la fenêtre ouverte. Tu reviendras ensuite là où tu étais."}
-          </Label>
-        </View>
         {auth.error ? (
-          <Notice tone="error">{auth.error}</Notice>
+          // Retrying here keeps the destination saved by the original screen.
+          <SignInPanel
+            title="Reprenons la connexion."
+            intro="Le retour de connexion n’a pas abouti. Relance-la : tu reviendras ensuite là où tu étais."
+            preserveReturn
+          />
         ) : (
-          <View style={s.progress} accessibilityLiveRegion="polite">
-            <LoadingIndicator />
-            <Label muted style={s.caption}>
-              Connexion en cours…
-            </Label>
-          </View>
+          <>
+            <View style={s.intro}>
+              <View style={[s.badge, { backgroundColor: c.primarySoft }]}>
+                <Icon
+                  name={auth.isAuthenticated ? "check" : "person"}
+                  color={c.primary}
+                  size={30}
+                />
+              </View>
+              <Label accessibilityRole="header" style={s.title}>
+                {auth.isAuthenticated
+                  ? "Connexion réussie."
+                  : "Connexion en cours."}
+              </Label>
+              <Label muted>
+                {auth.isAuthenticated
+                  ? "Retour à l’écran où tu étais. Rien n’a été publié."
+                  : "Termine la connexion dans la fenêtre ouverte. Tu reviendras ensuite là où tu étais, sans rien publier."}
+              </Label>
+            </View>
+            <View style={s.progress} accessibilityLiveRegion="polite">
+              <LoadingIndicator />
+              <Label muted style={s.caption}>
+                {auth.isAuthenticated
+                  ? "Retour…"
+                  : "Vérification de ton compte…"}
+              </Label>
+            </View>
+            {catalog.offline && (
+              <Notice tone="warning">
+                Tu es hors ligne. La connexion se terminera quand le réseau
+                reviendra.
+              </Notice>
+            )}
+          </>
         )}
         <Button
           title="Revenir à l’onglet Moi"
@@ -64,7 +90,14 @@ export default function LoginReturn() {
 }
 const s = StyleSheet.create({
   content: { maxWidth: 600, paddingTop: 22, paddingBottom: 28, gap: 28 },
-  intro: { gap: 18 },
+  intro: { gap: 14 },
+  badge: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   title: {
     fontSize: 28,
     lineHeight: 34,

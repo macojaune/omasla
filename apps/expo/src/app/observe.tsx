@@ -8,7 +8,7 @@ import { useLocalSearchParams, useRouter } from "expo-router"
 import { api } from "@omasla/convex"
 
 import ScreenHeader from "~/components/screen-header"
-import { saveAuthReturn } from "~/lib/auth-return"
+import SignInPanel from "~/components/sign-in-panel"
 import { useCatalog } from "~/lib/catalog"
 import {
   ObservationError,
@@ -166,40 +166,11 @@ export default function Observe() {
             />
           </>
         ) : !auth.isAuthenticated ? (
-          <>
-            <View style={s.intro}>
-              <Label accessibilityRole="header" style={s.title}>
-                Un compte pour contribuer.
-              </Label>
-              <Label muted>
-                Connecte-toi pour ajouter la position du groupe près de toi. Tu
-                reviendras ici avant toute publication.
-              </Label>
-            </View>
-            <Button
-              title="Se connecter"
-              busy={busy || auth.isLoading}
-              disabled={!catalog.canWrite}
-              onPress={() => {
-                setBusy(true)
-                setError(null)
-                void saveAuthReturn(groupId)
-                  .then(() => auth.signIn())
-                  .catch((failure) => setError(friendlyError(failure)))
-                  .finally(() => setBusy(false))
-              }}
-            />
-            <Label muted style={s.caption}>
-              Apple, Google ou email, selon les options disponibles.
-            </Label>
-            {catalog.offline && (
-              <Notice tone="warning">
-                Reconnecte-toi au réseau pour te connecter et ajouter la
-                position.
-              </Notice>
-            )}
-            {error && <Notice tone="error">{error}</Notice>}
-          </>
+          <SignInPanel
+            title="Un compte pour contribuer."
+            intro="Connecte-toi pour ajouter la position du groupe près de toi. Tu reviendras ici avant toute publication."
+            returnGroupId={groupId}
+          />
         ) : !group ? (
           <Notice>Ce groupe n’est pas disponible. Reviens à la liste.</Notice>
         ) : (
