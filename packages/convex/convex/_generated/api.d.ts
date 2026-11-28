@@ -12,6 +12,7 @@ import type * as accounts from "../accounts.js";
 import type * as administration from "../administration.js";
 import type * as authSessions from "../authSessions.js";
 import type * as catalog from "../catalog.js";
+import type * as devReplay from "../devReplay.js";
 import type * as groups from "../groups.js";
 import type * as lib_live from "../lib/live.js";
 import type * as lib_security from "../lib/security.js";
@@ -34,6 +35,7 @@ declare const fullApi: ApiFromModules<{
   administration: typeof administration;
   authSessions: typeof authSessions;
   catalog: typeof catalog;
+  devReplay: typeof devReplay;
   groups: typeof groups;
   "lib/live": typeof lib_live;
   "lib/security": typeof lib_security;
