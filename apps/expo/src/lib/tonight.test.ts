@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import type { Id, PublicCatalog, PublicGroup } from "@omasla/convex"
 
-import { tonightSections } from "./catalog-model"
+import { dataAgeLabel, isLiveNow, tonightSections } from "./catalog-model"
 
 // Fictional data exclusively for testing.
 const now = 1_700_000_000_000
@@ -51,5 +51,34 @@ describe("tonightSections", () => {
       "Gamma",
       "Zeta",
     ])
+  })
+  it("puts « Mes groupes » first inside each section", () => {
+    const sections = tonightSections(catalog, now, new Set(["Zeta"]))
+    expect(sections.waiting.map((g) => g.title)).toEqual([
+      "Zeta",
+      "Delta",
+      "Gamma",
+    ])
+    expect(sections.live.map((g) => g.title)).toEqual(["Bêta"])
+  })
+  it("only counts a fresh point from a member as live", () => {
+    const live = catalog.groups.filter((g) => isLiveNow(g, catalog, now))
+    expect(live.map((g) => g.title)).toEqual(["Bêta"])
+  })
+})
+
+describe("dataAgeLabel", () => {
+  it("says how old the loaded data is", () => {
+    expect(dataAgeLabel(now, now + 20_000)).toBe(
+      "chargées il y a moins d’une minute",
+    )
+    expect(dataAgeLabel(now, now + 12 * 60_000)).toBe("chargées il y a 12 min")
+    expect(dataAgeLabel(now, now + 3 * 3_600_000)).toBe("chargées il y a 3 h")
+    expect(dataAgeLabel(now, now + 50 * 3_600_000)).toBe(
+      "chargées il y a 2 jours",
+    )
+    expect(dataAgeLabel(now, now - 5_000)).toBe(
+      "chargées il y a moins d’une minute",
+    )
   })
 })

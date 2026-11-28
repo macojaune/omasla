@@ -154,14 +154,19 @@ export default function Observe() {
                 Merci pour le repère.
               </Label>
               <Label muted>
-                Ton ajout a été enregistré. Elle aide le public à retrouver ce
-                groupe.
+                Ton ajout est publié. Il aide le public à retrouver ce groupe.
               </Label>
             </View>
             <Button
-              title="Retrouver le groupe"
+              title="Voir le point sur la carte"
+              icon="map"
               onPress={() =>
-                router.canGoBack() ? router.back() : router.replace("/")
+                // Pops this modal (and a login return, if any) back to the
+                // tabs, then the map selects and centres on the group.
+                router.dismissTo({
+                  pathname: "/",
+                  params: { groupId: group?.id ?? groupId },
+                })
               }
             />
           </>
