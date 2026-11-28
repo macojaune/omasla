@@ -1,4 +1,3 @@
-import type { BottomSheetFlatListMethods } from "@gorhom/bottom-sheet"
 import type { TextInputInstance, ViewStyle } from "react-native"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
@@ -8,38 +7,40 @@ import {
   Linking,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   useWindowDimensions,
   View,
 } from "react-native"
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-} from "react-native-reanimated"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { BlurView } from "expo-blur"
 import * as Haptics from "expo-haptics"
 import * as Location from "expo-location"
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router"
-import BottomSheet, {
-  BottomSheetFlatList,
-  BottomSheetScrollView,
-} from "@gorhom/bottom-sheet"
+import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet"
 
 import type { PublicGroup } from "@omasla/convex"
-import { positionFreshness } from "@omasla/convex"
 
+import type { Bounds, Coordinate, MapFilter } from "~/lib/map-view"
 import { Input } from "~/beui/components/input"
-import { Tabs, TabsList, TabsTrigger } from "~/beui/components/tabs"
 import DiscoveryHandle, {
   DISCOVERY_HANDLE_HEIGHT,
 } from "~/components/discovery-handle"
+import GroupCarousel, { MapMessage } from "~/components/group-carousel"
 import GroupDetailPanel from "~/components/group-detail-panel"
 import GroupEmblem from "~/components/group-emblem"
 import GroupMap from "~/components/group-map"
 import GroupRow from "~/components/group-row"
 import { useCatalog } from "~/lib/catalog"
-import { normalizeSearch, visiblePosition } from "~/lib/catalog-model"
+import {
+  carouselGroups,
+  mapGroups,
+  sameBounds,
+  searchGroups,
+  spotCounts,
+} from "~/lib/map-view"
+import { daysUntil, nextOuting, outingLabels } from "~/lib/season"
+import { useFavorites } from "~/lib/use-favorites"
 import {
   Button,
   Icon,
@@ -49,11 +50,18 @@ import {
   usePalette,
 } from "~/theme/ui"
 
-export default function Discovery() {
+const SHEET_LEVELS = ["Fiche réduite", "Fiche agrandie"]
+
+/**
+ * Home map (P1): spotted groups as coloured plaques, a compact search and the
+ * live/seen chips on top, the groups of the current frame in a carousel at the
+ * bottom. The bottom sheet only holds a group's sheet.
+ */
+export default function MapScreen() {
   const c = usePalette()
   const insets = useSafeAreaInsets()
   const { width, height: windowHeight, fontScale } = useWindowDimensions()
-  // The tab bar sits below this screen: size the panel from the screen itself.
+  // The tab bar sits below this screen: size overlays from the screen itself.
   const [pageHeight, setPageHeight] = useState(0)
   const height = pageHeight || windowHeight
   const wide = width >= 700
@@ -63,96 +71,51 @@ export default function Discovery() {
   const catalog = useCatalog()
   const sheet = useRef<BottomSheet>(null)
   const input = useRef<TextInputInstance>(null)
-  const groupList = useRef<BottomSheetFlatListMethods>(null)
-  const savedListOffset = useRef(0)
-  const restoreListOffset = useRef(false)
-  const listReady = useRef(false)
-  const listPanelIndex = useRef(1)
   const mounted = useRef(true)
   const [search, setSearch] = useState("")
-  const [filter, setFilter] = useState<"all" | "live">("all")
+  const [searchFocused, setSearchFocused] = useState(false)
+  const [filter, setFilter] = useState<MapFilter>("all")
+  const [bounds, setBounds] = useState<Bounds | null>(null)
+  const [relief, setRelief] = useState(true)
   const [selectedId, setSelectedId] = useState<string | undefined>(
     params.groupId,
   )
-  const [sheetIndex, setSheetIndex] = useState(1)
-  const [detailHeadingHeight, setDetailHeadingHeight] = useState(0)
+  const [sheetIndex, setSheetIndex] = useState(params.groupId ? 0 : -1)
+  const [contentHeight, setContentHeight] = useState(0)
   const [settledPanel, setSettledPanel] = useState<{
     index: number
     top: number
     layout: string
   } | null>(null)
+  const [topBlockHeight, setTopBlockHeight] = useState(0)
+  const [bottomBlockHeight, setBottomBlockHeight] = useState(0)
   const [locating, setLocating] = useState(false)
   const [locationError, setLocationError] = useState<string | null>(null)
   const [locationSettings, setLocationSettings] = useState(false)
-  const [userLocation, setUserLocation] = useState<{
-    latitude: number
-    longitude: number
-  } | null>(null)
+  const [userLocation, setUserLocation] = useState<Coordinate | null>(null)
   const [camera, setCamera] = useState<{
     kind: "overview" | "user" | "selection"
     id: number
-    coordinate?: { latitude: number; longitude: number }
+    coordinate?: Coordinate
   }>({ kind: params.groupId ? "selection" : "overview", id: 0 })
   const [reduceTransparency, setReduceTransparency] = useState(false)
   const [keyboardInset, setKeyboardInset] = useState(0)
   useEffect(() => {
     if (Platform.OS !== "ios") return
     const change = Keyboard.addListener("keyboardWillChangeFrame", (event) => {
-      Keyboard.scheduleLayoutAnimation(event)
       const docked = event.endCoordinates.width >= width * 0.7
       setKeyboardInset(
-        docked ? Math.max(0, height - event.endCoordinates.screenY) : 0,
+        docked ? Math.max(0, windowHeight - event.endCoordinates.screenY) : 0,
       )
     })
-    const hide = Keyboard.addListener("keyboardWillHide", (event) => {
-      Keyboard.scheduleLayoutAnimation(event)
-      setKeyboardInset(0)
-    })
+    const hide = Keyboard.addListener("keyboardWillHide", () =>
+      setKeyboardInset(0),
+    )
     return () => {
       change.remove()
       hide.remove()
     }
-  }, [height, width])
-  const panelPosition = useSharedValue(height - 350)
-  const selected = catalog.data?.groups.find((group) => group.id === selectedId)
-  const topInset = insets.top + 12
-  const availableHeight = Math.max(120, height - topInset - keyboardInset)
-  const compactHeight = Math.min(112, availableHeight - 32)
-  const listHeight = Math.max(
-    compactHeight + 24,
-    Math.min(availableHeight * 0.6, 386),
-  )
-  const detailHeight = Math.min(
-    availableHeight - 1,
-    Math.max(
-      compactHeight + 24,
-      Math.min(availableHeight * 0.6, 350),
-      detailHeadingHeight + DISCOVERY_HANDLE_HEIGHT + 12,
-    ),
-  )
-  const middleHeight = selected ? detailHeight : listHeight
-  const snapPoints = useMemo(
-    () => (wide ? ["100%"] : [compactHeight, middleHeight, "100%"]),
-    [wide, compactHeight, middleHeight],
-  )
-  const panelLayout = `${width}:${height}:${fontScale}:${keyboardInset}:${compactHeight}:${middleHeight}:${topInset}`
-  const activeSnapPoint = snapPoints[sheetIndex] ?? snapPoints[1]
-  const occupiedMapBottom = wide
-    ? 20
-    : settledPanel?.layout === panelLayout && settledPanel.index === sheetIndex
-      ? height - settledPanel.top
-      : keyboardInset +
-        (typeof activeSnapPoint === "number"
-          ? activeSnapPoint
-          : availableHeight)
-  const controlStyle = useAnimatedStyle(() => ({
-    top: Math.max(topInset + 42, panelPosition.value - 120),
-  }))
-  const collapsed = !wide && sheetIndex === 0 && keyboardInset === 0
-  const renderHandle = useCallback(
-    () => <DiscoveryHandle index={sheetIndex} />,
-    [sheetIndex],
-  )
+  }, [windowHeight, width])
   useEffect(() => {
     mounted.current = true
     void AccessibilityInfo.isReduceTransparencyEnabled()
@@ -169,25 +132,111 @@ export default function Discovery() {
       subscription.remove()
     }
   }, [])
+
+  const data = catalog.data
+  const selected = data?.groups.find((group) => group.id === selectedId)
+  const counts = useMemo(
+    () => (data ? spotCounts(data, catalog.now) : null),
+    [data, catalog.now],
+  )
+  // « Mes groupes » come first in the carousel too (MAR-454).
+  const favorites = useFavorites()
+  const markers = useMemo(
+    () => (data ? mapGroups(data, catalog.now, { filter, query: search }) : []),
+    [data, catalog.now, filter, search],
+  )
+  const carousel = useMemo(() => {
+    if (!data) return []
+    const items = carouselGroups(markers, data, catalog.now, {
+      bounds,
+      from: userLocation,
+    })
+    return [
+      ...items.filter((item) => favorites.set.has(item.group.id)),
+      ...items.filter((item) => !favorites.set.has(item.group.id)),
+    ]
+  }, [data, markers, catalog.now, bounds, userLocation, favorites.set])
+  const results = useMemo(
+    () => (data ? searchGroups(data, catalog.now, search) : []),
+    [data, catalog.now, search],
+  )
+  const mapCatalog = useMemo(() => {
+    if (!data) return null
+    // The open sheet keeps its group on the map even when filtered out.
+    const groups =
+      selected && !markers.includes(selected) ? [...markers, selected] : markers
+    return { ...data, groups }
+  }, [data, markers, selected])
+  const showResults = searchFocused && Boolean(search.trim())
+
+  // Sheet geometry: the small snap shows the header, the state and the main action.
+  const topInset = insets.top + 12
+  const availableHeight = Math.max(160, height - topInset)
+  const detailHeight = Math.min(
+    availableHeight - 1,
+    Math.max(
+      220,
+      Math.min(
+        (contentHeight || 330) + DISCOVERY_HANDLE_HEIGHT + 30,
+        availableHeight * 0.62,
+      ),
+    ),
+  )
+  const snapPoints = useMemo(
+    () => (wide ? ["100%"] : [detailHeight, "100%"]),
+    [wide, detailHeight],
+  )
+  const panelLayout = `${width}:${height}:${fontScale}:${detailHeight}:${topInset}`
+  const sheetOpen = Boolean(selectedId) && sheetIndex >= 0
+  const activeSnapPoint = snapPoints[sheetIndex] ?? snapPoints[0]
+  const occupiedMapBottom =
+    sheetOpen && !wide
+      ? settledPanel?.layout === panelLayout &&
+        settledPanel.index === sheetIndex
+        ? height - settledPanel.top
+        : typeof activeSnapPoint === "number"
+          ? activeSnapPoint
+          : availableHeight
+      : bottomBlockHeight + 12
+  const overlayTop = insets.top + 10
+  const controlsTop = overlayTop + (topBlockHeight || 104) + 10
+  const overlayWidth: ViewStyle = wide
+    ? { left: 16, width: 392 }
+    : { left: 16, right: 16 }
+
   useEffect(() => {
     if (params.groupId) {
       setSelectedId(params.groupId)
       setCamera((value) => ({ kind: "selection", id: value.id + 1 }))
-      sheet.current?.snapToIndex(wide ? 0 : 1)
+      sheet.current?.snapToIndex(0)
     }
-  }, [params.groupId, wide])
-  const closeSelection = useCallback(() => {
-    restoreListOffset.current = true
+  }, [params.groupId])
+  const clearSelection = useCallback(() => {
     setSelectedId(undefined)
-    if (params.groupId) router.setParams({ groupId: undefined })
     setLocationError(null)
-    sheet.current?.snapToIndex(wide ? 0 : listPanelIndex.current)
-  }, [params.groupId, router, wide])
-  const beginSearch = () => {
-    setSelectedId(undefined)
     if (params.groupId) router.setParams({ groupId: undefined })
-    sheet.current?.snapToIndex(wide ? 0 : 2)
-  }
+  }, [params.groupId, router])
+  // Closing animates the sheet down; `onClose` then clears the selection.
+  const closeSelection = useCallback(() => {
+    if (sheetIndex >= 0) sheet.current?.close()
+    else clearSelection()
+  }, [clearSelection, sheetIndex])
+  const renderHandle = useCallback(
+    () => (
+      <DiscoveryHandle
+        index={sheetIndex}
+        label="Fiche du groupe"
+        levels={wide ? ["Fiche"] : SHEET_LEVELS}
+      />
+    ),
+    [sheetIndex, wide],
+  )
+  const endSearch = useCallback((clear: boolean) => {
+    if (clear) setSearch("")
+    setSearchFocused(false)
+    input.current?.blur()
+    Keyboard.dismiss()
+  }, [])
   useFocusEffect(
     useCallback(() => {
       const event = BackHandler.addEventListener("hardwareBackPress", () => {
@@ -195,74 +244,43 @@ export default function Discovery() {
           closeSelection()
           return true
         }
-        if (search) {
-          setSearch("")
-          Keyboard.dismiss()
-          sheet.current?.snapToIndex(wide ? 0 : 1)
+        if (searchFocused) {
+          endSearch(false)
           return true
         }
-        if (!wide && sheetIndex > 0) {
-          sheet.current?.snapToIndex(0)
+        if (search) {
+          endSearch(true)
+          return true
+        }
+        if (filter !== "all") {
+          setFilter("all")
           return true
         }
         return false
       })
       return () => event.remove()
-    }, [selectedId, closeSelection, search, sheetIndex, wide]),
-  )
-  const data = catalog.data
-  const groups = useMemo(() => {
-    if (!data) return []
-    const query = normalizeSearch(search)
-    return data.groups
-      .filter(
-        (group) =>
-          normalizeSearch(group.title).includes(query) &&
-          (filter === "all" ||
-            (group.live &&
-              group.position?.source === "referent" &&
-              positionFreshness(group.position, data.policy, catalog.now) ===
-                "recent")),
-      )
-      .sort(
-        (a, b) =>
-          Number(Boolean(visiblePosition(b, data, catalog.now))) -
-            Number(Boolean(visiblePosition(a, data, catalog.now))) ||
-          a.title.localeCompare(b.title, "fr"),
-      )
-  }, [data, search, filter, catalog.now])
-  useEffect(() => {
-    savedListOffset.current = 0
-    restoreListOffset.current = false
-    groupList.current?.scrollToOffset({ offset: 0, animated: false })
-  }, [search, filter])
-  const mapCatalog = useMemo(
-    () => (data ? { ...data, groups } : null),
-    [data, groups],
+    }, [selectedId, closeSelection, search, searchFocused, endSearch, filter]),
   )
   function select(group: PublicGroup) {
-    if (!selectedId) listPanelIndex.current = sheetIndex
-    listReady.current = false
-    Keyboard.dismiss()
+    endSearch(false)
     setSelectedId(group.id)
+    setContentHeight(0)
     setCamera((value) => ({ kind: "selection", id: value.id + 1 }))
     setLocationError(null)
-    sheet.current?.snapToIndex(wide ? 0 : 1)
+    sheet.current?.snapToIndex(0)
     void Haptics.selectionAsync().catch(() => undefined)
   }
-  function restoreListScroll(index: number) {
-    if (!restoreListOffset.current || !listReady.current || !groupList.current)
-      return
-    if (!wide && index !== 2) {
-      if (listPanelIndex.current !== 2) restoreListOffset.current = false
-      return
-    }
-    groupList.current.scrollToOffset({
-      offset: savedListOffset.current,
-      animated: false,
-    })
-    restoreListOffset.current = false
+  function overview() {
+    setCamera((value) => ({ kind: "overview", id: value.id + 1 }))
   }
+  function changeFilter(value: MapFilter) {
+    setFilter(value)
+    overview()
+    void Haptics.selectionAsync().catch(() => undefined)
+  }
+  const onBoundsChange = useCallback((next: Bounds) => {
+    setBounds((value) => (sameBounds(value, next) ? value : next))
+  }, [])
   async function locate() {
     if (locating) return
     setLocating(true)
@@ -295,7 +313,6 @@ export default function Discovery() {
       }
       setUserLocation(coordinate)
       setCamera((value) => ({ kind: "user", id: value.id + 1, coordinate }))
-      sheet.current?.snapToIndex(0)
     } catch {
       if (mounted.current)
         setLocationError(
@@ -331,114 +348,137 @@ export default function Discovery() {
       {children}
     </View>
   )
-  const heading = (
-    <View style={s.heading}>
-      {selected && <GroupEmblem group={selected} size={48} />}
-      <View style={{ flex: 1, gap: 4 }}>
-        <Label
-          accessibilityRole="header"
-          style={{
-            fontSize: selected ? 25 : 26,
-            lineHeight: 32,
-            letterSpacing: -0.6,
-            fontWeight: "700",
-          }}
-        >
-          {selected?.title.replace(/ · démo$/, "") ??
-            (search ? "Résultats" : largeText ? "Groupes" : "Les groupes")}
-        </Label>
-        {!selected && (!largeText || Boolean(search)) && (
-          <Label muted style={{ fontSize: 14, lineHeight: 20 }}>
-            {search
-              ? `${groups.length} groupe${groups.length > 1 ? "s" : ""} trouvé${groups.length > 1 ? "s" : ""}`
-              : "Retrouve-les sur la carte"}
-          </Label>
-        )}
-      </View>
-      {(Boolean(selected) || !wide) && (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={
-            selected ? "Fermer la fiche du groupe" : "Voir la carte"
-          }
-          onPress={() => {
-            if (selected) closeSelection()
-            else {
-              Keyboard.dismiss()
-              sheet.current?.snapToIndex(0)
-            }
-          }}
-          style={({ pressed }) => [
-            selected ? s.round : s.namedAction,
-            { backgroundColor: c.background, opacity: pressed ? 0.65 : 1 },
-          ]}
-        >
-          <Icon name={selected ? "close" : "map"} color={c.muted} size={17} />
-          {!selected && (
-            <Label maxFontSizeMultiplier={1.6} style={s.actionLabel}>
-              Carte
-            </Label>
-          )}
-        </Pressable>
-      )}
-    </View>
-  )
-  const notices = (
-    <>
-      {catalog.offline && (
-        <Notice tone="warning">
-          Hors ligne
-          {catalog.savedAt
-            ? ` · données de ${new Date(catalog.savedAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`
-            : ""}
-          . Les positions sont datées.
-        </Notice>
-      )}
-      {catalog.error && <Notice tone="warning">{catalog.error}</Notice>}
-      {selectedId && !selected && catalog.loaded && (
-        <Notice>
-          Ce groupe n’est plus disponible.{" "}
-          <Label onPress={closeSelection} style={{ color: c.primary }}>
-            Voir les groupes
-          </Label>
-        </Notice>
-      )}
-    </>
-  )
-  const listHeader = (
-    <View style={s.listHeader}>
-      {heading}
-      {notices}
-      <Tabs
-        value={filter}
-        onValueChange={(value) => {
-          if (value !== "all" && value !== "live") return
-          setFilter(value)
-          sheet.current?.snapToIndex(wide ? 0 : 1)
-        }}
+  const chip = (value: "live" | "seen", text: string, count: number) => {
+    const active = filter === value
+    const disabled = !active && count === 0
+    return (
+      <Pressable
+        key={value}
+        accessibilityRole="button"
+        accessibilityLabel={`${text} · ${count}`}
+        accessibilityState={{ selected: active, disabled }}
+        accessibilityHint={
+          active
+            ? "Touche pour revoir tous les groupes repérés."
+            : "Touche pour n’afficher que ces groupes."
+        }
+        disabled={disabled}
+        onPress={() => changeFilter(active ? "all" : value)}
+        style={({ pressed }) => [
+          s.chip,
+          {
+            backgroundColor: active ? c.ink : c.surface,
+            shadowOpacity: c.isDark ? 0.3 : 0.12,
+            opacity: disabled ? 0.6 : pressed ? 0.8 : 1,
+          },
+        ]}
       >
-        <TabsList className="bg-background">
-          <TabsTrigger value="all" className="min-h-11">
-            Tous les groupes
-          </TabsTrigger>
-          <TabsTrigger
-            value="live"
-            className="min-h-11"
-            accessibilityLabel="Groupes en direct"
-            icon={({ color, size }) => (
-              <Icon
-                name="signal"
-                color={String(color ?? c.muted)}
-                size={size}
-              />
-            )}
-          >
-            En direct
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
-    </View>
-  )
+        {value === "live" && (
+          <View
+            style={[
+              s.chipDot,
+              { backgroundColor: active ? "#3DDC84" : c.success },
+            ]}
+          />
+        )}
+        <Label
+          maxFontSizeMultiplier={1.6}
+          style={[s.chipLabel, { color: active ? c.surface : c.ink }]}
+        >
+          {text} · {count}
+        </Label>
+      </Pressable>
+    )
+  }
+
+  const outing = nextOuting(new Date(catalog.now))
+  const outingDays = daysUntil(new Date(catalog.now), outing.date)
+  const bottomContent = (() => {
+    if (!data) {
+      if (!catalog.loaded) return null
+      return (
+        <MapMessage
+          title={
+            catalog.offline
+              ? "Une connexion pour commencer"
+              : "Les groupes n’ont pas pu être chargés"
+          }
+        >
+          <Label muted style={s.messageText}>
+            {catalog.offline
+              ? "Charge la carte une première fois pour la retrouver ensuite hors ligne."
+              : "Réessaie dans un instant."}
+          </Label>
+          <Button
+            title="Actualiser"
+            variant="secondary"
+            disabled={catalog.offline}
+            onPress={catalog.refresh}
+          />
+        </MapMessage>
+      )
+    }
+    if (!counts?.spotted)
+      return (
+        <MapMessage title="Aucun groupe repéré pour l’instant">
+          <Label muted style={s.messageText}>
+            {outingDays === 0
+              ? "C’est soir de sortie : les groupes apparaîtront ici dès leur premier point."
+              : // In season, outings are never more than six days apart.
+                `${outingDays > 6 ? "Hors saison. " : ""}Prochaine sortie : ${outingLabels[outing.kind]} ${outing.date.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: outingDays > 6 ? "numeric" : undefined })}. Les groupes apparaîtront ici dès qu’ils seront repérés.`}
+          </Label>
+          <Button
+            title="Voir Ce soir"
+            icon="tonight"
+            variant="secondary"
+            onPress={() => router.navigate("/ce-soir")}
+          />
+        </MapMessage>
+      )
+    if (!markers.length)
+      return (
+        <MapMessage
+          title={
+            search.trim()
+              ? "Aucun groupe repéré à ce nom"
+              : filter === "live"
+                ? "Aucun groupe en direct"
+                : "Aucun groupe vu récemment"
+          }
+        >
+          <Button
+            title={`Voir les groupes repérés · ${counts.spotted}`}
+            variant="secondary"
+            onPress={() => {
+              setSearch("")
+              changeFilter("all")
+            }}
+          />
+        </MapMessage>
+      )
+    if (!carousel.length)
+      return (
+        <MapMessage title="Aucun groupe dans ce cadre">
+          <Button
+            title={`Voir ${markers.length > 1 ? `les ${markers.length} groupes` : "le groupe"} sur la carte`}
+            icon="overview"
+            variant="secondary"
+            onPress={overview}
+          />
+        </MapMessage>
+      )
+    return (
+      <GroupCarousel
+        items={carousel}
+        catalog={data}
+        now={catalog.now}
+        width={wide ? Math.min(width, 720) : width}
+        largeText={largeText}
+        onSelect={select}
+      />
+    )
+  })()
+
   return (
     <View
       onLayout={(event) =>
@@ -451,21 +491,26 @@ export default function Discovery() {
           catalog={mapCatalog}
           now={catalog.now}
           selectedId={selectedId}
-          selectionReady={wide || sheetIndex === 1}
+          selectionReady={wide || sheetIndex >= 0}
           cameraReady={
             wide ||
             camera.id === 0 ||
-            (camera.kind === "selection" ? sheetIndex === 1 : sheetIndex === 0)
+            camera.kind !== "selection" ||
+            sheetIndex >= 0
           }
           onSelect={select}
           bottomInset={occupiedMapBottom}
-          leftInset={wide ? 420 : 0}
+          leftInset={wide && selectedId ? 420 : 0}
           cameraRequest={camera}
           userLocation={userLocation}
-          onPan={() => Keyboard.dismiss()}
+          onBoundsChange={onBoundsChange}
+          relief={relief}
+          onReliefChange={setRelief}
+          onPan={() => {
+            if (searchFocused) endSearch(false)
+          }}
           onMapPress={() => {
-            Keyboard.dismiss()
-            if (!wide) sheet.current?.snapToIndex(0)
+            if (searchFocused) endSearch(false)
           }}
         />
       ) : (
@@ -474,10 +519,9 @@ export default function Discovery() {
           <Label muted>La carte se prépare…</Label>
         </View>
       )}
-      <Animated.View
-        pointerEvents="box-none"
-        style={[s.controls, wide ? { top: insets.top + 64 } : controlStyle]}
-      >
+
+      {/* Map controls, grouped: overview, my position, flat/relief. */}
+      <View pointerEvents="box-none" style={[s.controls, { top: controlsTop }]}>
         {material(
           <View>
             <Pressable
@@ -485,24 +529,14 @@ export default function Discovery() {
               accessibilityLabel={
                 search || filter !== "all"
                   ? "Vue d’ensemble des résultats"
-                  : "Voir tous les groupes sur la carte"
+                  : "Voir tous les groupes repérés sur la carte"
               }
-              onPress={() => {
-                setCamera((value) => ({ kind: "overview", id: value.id + 1 }))
-                Keyboard.dismiss()
-                sheet.current?.snapToIndex(0)
-              }}
+              onPress={overview}
               style={s.control}
             >
               <Icon name="overview" color={c.ink} size={20} />
             </Pressable>
-            <View
-              style={{
-                height: StyleSheet.hairlineWidth,
-                backgroundColor: c.line,
-                marginHorizontal: 14,
-              }}
-            />
+            <View style={[s.divider, { backgroundColor: c.line }]} />
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Me localiser sur la carte"
@@ -521,15 +555,39 @@ export default function Discovery() {
                 />
               )}
             </Pressable>
+            <View style={[s.divider, { backgroundColor: c.line }]} />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={
+                relief
+                  ? "Passer à la carte à plat"
+                  : "Afficher les bâtiments en relief"
+              }
+              onPress={() => setRelief((value) => !value)}
+              style={s.control}
+            >
+              <Label
+                maxFontSizeMultiplier={1.4}
+                style={{ fontSize: 14, lineHeight: 18, fontWeight: "700" }}
+              >
+                {relief ? "2D" : "3D"}
+              </Label>
+            </Pressable>
           </View>,
           { borderRadius: 18 },
         )}
-      </Animated.View>
+      </View>
+
       {locationError && (
         <View
           style={[
             s.locationError,
-            { top: insets.top + 16, left: wide ? 436 : 16, right: 82 },
+            {
+              top: controlsTop,
+              left: 16,
+              right: 84,
+              maxWidth: wide ? 392 : undefined,
+            },
           ]}
         >
           <Notice tone="warning">{locationError}</Notice>
@@ -547,39 +605,163 @@ export default function Discovery() {
           />
         </View>
       )}
+
+      {/* Bottom: carousel of the frame, or the empty state. */}
+      {(!sheetOpen || wide) && !showResults && (
+        <View
+          pointerEvents="box-none"
+          onLayout={(event) =>
+            setBottomBlockHeight(Math.round(event.nativeEvent.layout.height))
+          }
+          style={[
+            s.bottom,
+            wide
+              ? { left: selectedId ? 424 : 0, right: 0, maxWidth: 760 }
+              : { left: 0, right: 0 },
+          ]}
+        >
+          {bottomContent}
+        </View>
+      )}
+
+      {/* Top: compact search, then the chips. */}
+      <View
+        pointerEvents="box-none"
+        style={[s.top, overlayWidth, { top: overlayTop }]}
+      >
+        <View
+          pointerEvents="box-none"
+          onLayout={(event) =>
+            setTopBlockHeight(Math.round(event.nativeEvent.layout.height))
+          }
+          style={{ gap: 8 }}
+        >
+          <View style={[s.material, s.search]}>
+            <Input
+              ref={input}
+              value={search}
+              onChangeText={setSearch}
+              placeholder="Chercher un groupe"
+              placeholderTextColor={c.muted}
+              accessibilityLabel="Chercher un groupe"
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
+              fieldHeight={48}
+              classNames={{ field: "bg-surface", input: "min-w-0 ps-11" }}
+              leftIcon={<Icon name="search" color={c.muted} size={19} />}
+              rightIcon={
+                search ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Effacer la recherche"
+                    onPress={() => {
+                      setSearch("")
+                      input.current?.focus()
+                    }}
+                    style={s.searchAction}
+                  >
+                    <Icon name="close" color={c.muted} size={16} />
+                  </Pressable>
+                ) : undefined
+              }
+              returnKeyType="search"
+              autoCorrect={false}
+              onSubmitEditing={() => {
+                endSearch(false)
+                overview()
+              }}
+            />
+          </View>
+          {!showResults && counts && (
+            <View pointerEvents="box-none" style={s.chips}>
+              {chip("live", "En direct", counts.live)}
+              {chip("seen", "Vus récemment", counts.seen)}
+            </View>
+          )}
+          {!showResults && catalog.offline && (
+            <Notice tone="warning" style={s.compactNotice}>
+              Hors ligne
+              {catalog.savedAt
+                ? ` · données de ${new Date(catalog.savedAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`
+                : ""}
+              . Les positions sont datées.
+            </Notice>
+          )}
+          {!showResults && catalog.error && !catalog.offline && (
+            <Notice tone="warning" style={s.compactNotice}>
+              {catalog.error}
+            </Notice>
+          )}
+        </View>
+        {showResults && data && (
+          <View
+            style={[
+              s.results,
+              {
+                backgroundColor: c.surface,
+                maxHeight: Math.max(
+                  160,
+                  windowHeight -
+                    overlayTop -
+                    (topBlockHeight || 56) -
+                    keyboardInset -
+                    (Platform.OS === "ios" && keyboardInset ? 24 : 120),
+                ),
+              },
+            ]}
+          >
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="on-drag"
+              contentContainerStyle={{ paddingHorizontal: 18 }}
+            >
+              {results.length ? (
+                results.map((group) => (
+                  <GroupRow
+                    key={group.id}
+                    group={group}
+                    catalog={data}
+                    now={catalog.now}
+                    onPress={() => select(group)}
+                  />
+                ))
+              ) : (
+                <View style={{ paddingVertical: 18, gap: 4 }}>
+                  <Label style={{ fontWeight: "600" }}>
+                    Aucun groupe à ce nom
+                  </Label>
+                  <Label muted style={s.messageText}>
+                    Essaie un autre nom, ou retrouve l’annuaire dans l’onglet
+                    Groupes.
+                  </Label>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        )}
+      </View>
+
+      {/* The sheet now only holds a group's card. */}
       <View
         pointerEvents="box-none"
         style={
           wide
-            ? [
-                s.sidebar,
-                {
-                  top: topInset,
-                  bottom: Math.max(16, keyboardInset),
-                },
-              ]
+            ? [s.sidebar, { top: controlsTop, bottom: 16 }]
             : StyleSheet.absoluteFill
         }
       >
         <BottomSheet
           ref={sheet}
-          index={wide ? 0 : 1}
+          index={params.groupId ? 0 : -1}
           snapPoints={snapPoints}
           topInset={wide ? 0 : topInset}
           accessible={false}
           handleComponent={renderHandle}
-          bottomInset={wide ? 0 : keyboardInset}
           enableDynamicSizing={false}
           enableOverDrag={false}
-          enablePanDownToClose={false}
+          enablePanDownToClose
           animateOnMount={false}
-          keyboardBehavior="extend"
-          keyboardBlurBehavior="restore"
-          enableBlurKeyboardOnGesture
-          animatedPosition={panelPosition}
-          onAnimate={(fromIndex, toIndex) => {
-            if (toIndex < fromIndex) Keyboard.dismiss()
-          }}
+          onClose={clearSelection}
           onChange={(index, position) => {
             setSheetIndex(index)
             setSettledPanel({
@@ -587,15 +769,8 @@ export default function Discovery() {
               top: position + (wide ? 0 : topInset),
               layout: panelLayout,
             })
-            restoreListScroll(index)
           }}
           backgroundStyle={{ backgroundColor: c.surface, borderRadius: 28 }}
-          handleIndicatorStyle={{
-            backgroundColor: c.line,
-            width: 36,
-            height: 5,
-          }}
-          handleStyle={{ paddingTop: 11, paddingBottom: 8 }}
           style={{
             shadowColor: "#14253D",
             shadowOpacity: c.isDark ? 0.3 : 0.13,
@@ -604,68 +779,8 @@ export default function Discovery() {
             elevation: 12,
           }}
         >
-          {collapsed ? (
-            <View style={s.searchContainer}>
-              <Button
-                title="Groupes"
-                icon="list"
-                variant="secondary"
-                onPress={() => {
-                  if (selectedId) {
-                    listPanelIndex.current = 1
-                    closeSelection()
-                  } else {
-                    sheet.current?.snapToIndex(1)
-                  }
-                }}
-              />
-            </View>
-          ) : !selected ? (
-            <View style={s.searchContainer}>
-              <Input
-                ref={input}
-                value={search}
-                onChangeText={setSearch}
-                placeholder="Chercher un groupe"
-                placeholderTextColor={c.muted}
-                accessibilityLabel="Rechercher un groupe"
-                onFocus={beginSearch}
-                fieldHeight={56}
-                classNames={{ field: "bg-background", input: "min-w-0 ps-12" }}
-                leftIcon={<Icon name="search" color={c.muted} size={21} />}
-                rightIcon={
-                  search ? (
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel="Effacer la recherche"
-                      onPress={() => {
-                        setSearch("")
-                        input.current?.focus()
-                      }}
-                      style={s.searchAction}
-                    >
-                      <Icon name="close" color={c.muted} size={16} />
-                    </Pressable>
-                  ) : undefined
-                }
-                returnKeyType="search"
-                autoCorrect={false}
-                onSubmitEditing={() => {
-                  Keyboard.dismiss()
-                  sheet.current?.snapToIndex(wide ? 0 : 1)
-                }}
-              />
-            </View>
-          ) : null}
-          {selected && data ? (
+          {selectedId ? (
             <BottomSheetScrollView
-              style={{ opacity: collapsed ? 0 : 1 }}
-              pointerEvents={collapsed ? "none" : "auto"}
-              accessibilityElementsHidden={collapsed}
-              importantForAccessibility={
-                collapsed ? "no-hide-descendants" : "auto"
-              }
-              keyboardShouldPersistTaps="handled"
               contentContainerStyle={{
                 paddingHorizontal: 24,
                 paddingBottom: 30,
@@ -673,157 +788,65 @@ export default function Discovery() {
             >
               <View
                 onLayout={(event) =>
-                  setDetailHeadingHeight(
-                    Math.ceil(event.nativeEvent.layout.height),
-                  )
+                  setContentHeight(Math.ceil(event.nativeEvent.layout.height))
                 }
-                style={s.detailHeader}
+                style={s.detail}
               >
-                {heading}
-                {!selected.live && (
-                  <>
-                    <Button
-                      title="Partager sa position ici"
-                      icon="pin"
-                      disabled={!selected.canObserve || !catalog.canWrite}
-                      onPress={() =>
-                        router.push({
-                          pathname: "/observe",
-                          params: { groupId: selected.id },
-                        })
-                      }
-                    />
-                    {catalog.offline && (
-                      <Label muted style={s.contributionHint}>
-                        Reconnecte-toi pour partager une position.
-                      </Label>
-                    )}
-                  </>
+                <View style={s.heading}>
+                  {selected && <GroupEmblem group={selected} size={48} />}
+                  <Label
+                    accessibilityRole="header"
+                    style={[s.title, { flex: 1 }]}
+                  >
+                    {selected?.title.replace(/ · démo$/, "") ?? "Groupe"}
+                  </Label>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Fermer la fiche du groupe"
+                    onPress={closeSelection}
+                    style={({ pressed }) => [
+                      s.round,
+                      {
+                        backgroundColor: c.background,
+                        opacity: pressed ? 0.65 : 1,
+                      },
+                    ]}
+                  >
+                    <Icon name="close" color={c.muted} size={17} />
+                  </Pressable>
+                </View>
+                {catalog.offline && (
+                  <Notice tone="warning">
+                    Hors ligne. Les positions sont datées.
+                  </Notice>
                 )}
-              </View>
-              {notices}
-              <GroupDetailPanel
-                key={selected.id}
-                group={selected}
-                catalog={data}
-                now={catalog.now}
-                offline={catalog.offline}
-              />
-            </BottomSheetScrollView>
-          ) : (
-            <BottomSheetFlatList<PublicGroup>
-              ref={groupList}
-              style={{ opacity: collapsed ? 0 : 1 }}
-              pointerEvents={collapsed ? "none" : "auto"}
-              accessibilityElementsHidden={collapsed}
-              importantForAccessibility={
-                collapsed ? "no-hide-descendants" : "auto"
-              }
-              onScrollEndDrag={(event) => {
-                if (!restoreListOffset.current)
-                  savedListOffset.current = event.nativeEvent.contentOffset.y
-              }}
-              onMomentumScrollEnd={(event) => {
-                if (!restoreListOffset.current)
-                  savedListOffset.current = event.nativeEvent.contentOffset.y
-              }}
-              onContentSizeChange={() => {
-                listReady.current = true
-                restoreListScroll(sheetIndex)
-              }}
-              keyboardDismissMode="on-drag"
-              data={groups}
-              keyExtractor={(group) => group.id}
-              keyboardShouldPersistTaps="handled"
-              ListHeaderComponent={listHeader}
-              contentContainerStyle={{
-                paddingHorizontal: 24,
-                paddingBottom: 24,
-              }}
-              renderItem={({ item }) =>
-                data ? (
-                  <GroupRow
-                    group={item}
+                {selected && data ? (
+                  <GroupDetailPanel
+                    key={selected.id}
+                    group={selected}
                     catalog={data}
                     now={catalog.now}
-                    onPress={() => select(item)}
+                    offline={catalog.offline}
+                    canWrite={catalog.canWrite}
+                    userLocation={userLocation}
                   />
-                ) : null
-              }
-              refreshing={catalog.refreshing}
-              onRefresh={catalog.offline ? undefined : catalog.refresh}
-              ListFooterComponent={
-                groups.length ? (
-                  <Label
-                    muted
-                    style={{ fontSize: 12, lineHeight: 18, paddingTop: 20 }}
-                  >
-                    Tous les groupes sont référencés. Leur présence ici ne
-                    garantit pas un suivi aujourd’hui.
-                  </Label>
-                ) : undefined
-              }
-              ListEmptyComponent={
-                <View style={{ gap: 14, paddingVertical: 28 }}>
-                  {!catalog.loaded ? (
-                    <>
-                      {[0, 1, 2].map((i) => (
-                        <View
-                          key={i}
-                          style={{
-                            height: 62,
-                            borderRadius: 12,
-                            backgroundColor: c.background,
-                          }}
-                        />
-                      ))}
-                      <Label muted>Chargement des groupes…</Label>
-                    </>
-                  ) : (
-                    <>
-                      <Label
-                        style={{
-                          fontSize: 19,
-                          lineHeight: 25,
-                          fontWeight: "600",
-                        }}
-                      >
-                        {search
-                          ? "Aucun groupe à ce nom"
-                          : filter === "live"
-                            ? "Aucun groupe en direct"
-                            : catalog.offline
-                              ? "Une connexion pour commencer"
-                              : "Les groupes arrivent ici"}
-                      </Label>
-                      <Label muted style={{ fontSize: 15, lineHeight: 22 }}>
-                        {search
-                          ? "Essaie un autre nom ou retrouve tous les groupes."
-                          : filter === "live"
-                            ? "Les autres groupes restent consultables dans l’annuaire."
-                            : "Charge la liste une première fois pour la retrouver ensuite hors ligne."}
-                      </Label>
-                      <Button
-                        title={
-                          search || filter === "live"
-                            ? "Voir tous les groupes"
-                            : "Actualiser"
-                        }
-                        variant="secondary"
-                        disabled={
-                          !search && filter !== "live" && catalog.offline
-                        }
-                        onPress={() => {
-                          setSearch("")
-                          setFilter("all")
-                          if (!search && filter === "all") catalog.refresh()
-                        }}
-                      />
-                    </>
-                  )}
-                </View>
-              }
-            />
+                ) : catalog.loaded ? (
+                  <Notice>
+                    Ce groupe n’est plus disponible.{" "}
+                    <Label
+                      onPress={closeSelection}
+                      style={{ color: c.primary }}
+                    >
+                      Revenir à la carte
+                    </Label>
+                  </Notice>
+                ) : (
+                  <LoadingIndicator />
+                )}
+              </View>
+            </BottomSheetScrollView>
+          ) : (
+            <View />
           )}
         </BottomSheet>
       </View>
@@ -845,26 +868,50 @@ const s = StyleSheet.create({
     shadowRadius: 14,
     elevation: 5,
   },
-  searchContainer: { paddingHorizontal: 20, paddingBottom: 14 },
+  top: { position: "absolute", gap: 8 },
+  search: { borderRadius: 24 },
   searchAction: {
     width: 44,
-    height: 48,
+    height: 44,
     justifyContent: "center",
     alignItems: "center",
   },
-  namedAction: {
-    minHeight: 48,
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  chip: {
+    minHeight: 40,
     paddingHorizontal: 14,
     paddingVertical: 8,
+    borderRadius: 20,
     flexDirection: "row",
-    gap: 8,
     alignItems: "center",
+    gap: 7,
+    shadowColor: "#172B46",
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+    elevation: 3,
   },
-  actionLabel: { fontSize: 14, lineHeight: 20, fontWeight: "600" },
+  chipDot: { width: 9, height: 9, borderRadius: 5 },
+  chipLabel: { fontSize: 14, lineHeight: 19, fontWeight: "700" },
+  compactNotice: { paddingVertical: 10, paddingHorizontal: 14 },
+  results: {
+    borderRadius: 18,
+    overflow: "hidden",
+    shadowColor: "#172B46",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.16,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  messageText: { fontSize: 14, lineHeight: 20 },
+  bottom: { position: "absolute", bottom: 12 },
   heading: { flexDirection: "row", alignItems: "center", gap: 12 },
-  listHeader: { gap: 16, paddingTop: 6, paddingBottom: 4 },
-  detailHeader: { gap: 12, paddingTop: 6, paddingBottom: 16 },
-  contributionHint: { fontSize: 12, lineHeight: 18 },
+  title: {
+    fontSize: 25,
+    lineHeight: 32,
+    letterSpacing: -0.6,
+    fontWeight: "700",
+  },
+  detail: { gap: 16, paddingTop: 6 },
   round: {
     width: 48,
     height: 48,
@@ -879,6 +926,7 @@ const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  divider: { height: StyleSheet.hairlineWidth, marginHorizontal: 14 },
   sidebar: { position: "absolute", left: 16, width: 392 },
   locationError: { position: "absolute", gap: 6 },
 })

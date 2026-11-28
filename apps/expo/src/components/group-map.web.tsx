@@ -29,7 +29,7 @@ export default function GroupMap({
           <Label style={s.title}>La carte se consulte dans l’app</Label>
           <Label muted style={s.description}>
             Les groupes et leurs dernières informations restent accessibles dans
-            la liste.
+            l’onglet Groupes.
           </Label>
         </View>
       </View>
