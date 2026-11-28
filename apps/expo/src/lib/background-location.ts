@@ -14,6 +14,7 @@ import { stopTrackingFromServer } from "./tracking-alerts"
 import {
   canTransmit,
   createTrackingTransitions,
+  isTransientLocationError,
   parseTracking,
 } from "./tracking-model"
 import { notifySpeedWarning, notifyZoneEnded } from "./tracking-notifications"
@@ -170,6 +171,8 @@ if (Platform.OS !== "web")
     LOCATION_TASK,
     async ({ data, error }) => {
       const record = await readTracking()
+      // A transient "no fix yet" must not end the broadcast at start-up.
+      if (error && isTransientLocationError(error)) return
       if (error) {
         await withTrackingTransition(async () => {
           const current = await readTracking()

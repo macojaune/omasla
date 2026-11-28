@@ -96,3 +96,17 @@ export function createTrackingTransitions(
   }
   return { run, stopIfCurrent }
 }
+
+/**
+ * iOS reports kCLErrorLocationUnknown (code 0) while it is still acquiring a
+ * fix, typically right after start. Apple documents it as transient: keep
+ * waiting for the next fix instead of treating it as a GPS failure. Denied
+ * permission and every other error still stop the broadcast.
+ */
+export function isTransientLocationError(
+  error: { code?: unknown; message?: unknown } | null | undefined,
+): boolean {
+  if (!error) return false
+  const message = typeof error.message === "string" ? error.message : ""
+  return error.code === 0 && message.includes("kCLErrorDomain")
+}
