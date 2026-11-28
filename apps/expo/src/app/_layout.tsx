@@ -71,6 +71,10 @@ function Routes() {
           options={{ presentation: "modal", animation: "slide_from_bottom" }}
         />
         <Stack.Screen
+          name="diffusion"
+          options={{ presentation: "modal", animation: "slide_from_bottom" }}
+        />
+        <Stack.Screen
           name="observe"
           options={{ presentation: "modal", animation: "slide_from_bottom" }}
         />

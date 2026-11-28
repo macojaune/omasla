@@ -116,37 +116,6 @@ function CardButton({
   )
 }
 
-function Tile({
-  label,
-  value,
-  detail,
-  tone,
-}: {
-  label: string
-  value: string
-  detail?: string
-  tone?: "warning"
-}) {
-  return (
-    <View
-      style={[s.tile, { backgroundColor: ink.tile }]}
-      accessible
-      accessibilityLabel={`${label} : ${value}${detail ? `, ${detail}` : ""}`}
-    >
-      <Label style={[s.tileLabel, { color: ink.muted }]}>{label}</Label>
-      <Label
-        style={[s.tileValue, { color: tone ? ink.warning : ink.text }]}
-        numberOfLines={2}
-      >
-        {value}
-      </Label>
-      {detail && (
-        <Label style={[s.tileLabel, { color: ink.muted }]}>{detail}</Label>
-      )}
-    </View>
-  )
-}
-
 /** Explains the three automatic stops. Collapsed by default to keep the commands in view. */
 export function AutoStopRules({ dark = false }: { dark?: boolean }) {
   const c = usePalette()
@@ -396,20 +365,13 @@ export default function BroadcastCard({
             : "Un autre membre du groupe diffuse la position."}
         </Label>
       )}
-      <View style={s.tiles}>
-        <Tile label="Zone" value="Surveillée" />
-        <Tile
-          label="Vitesse"
-          value={session.speedWarningAt ? "Trop élevée" : "Normale"}
-          tone={session.speedWarningAt ? "warning" : undefined}
-        />
-        <Tile
-          label="Arrêt auto"
-          value={formatRemaining(deadline.remainingMs)}
-          detail={`à ${formatClock(deadline.at)}`}
-          tone={deadline.soon ? "warning" : undefined}
-        />
-      </View>
+      {/* Zone and speed only show up when something is wrong (warnings below). */}
+      <Label
+        style={[s.small, { color: deadline.soon ? ink.warning : ink.muted }]}
+      >
+        Arrêt automatique {formatRemaining(deadline.remainingMs)}, à{" "}
+        {formatClock(deadline.at)}
+      </Label>
       {warnings.length > 0 && (
         <View
           style={[s.warnings, { backgroundColor: ink.tile }]}
@@ -561,10 +523,6 @@ const s = StyleSheet.create({
     letterSpacing: -0.4,
   },
   small: { fontSize: 14, lineHeight: 20 },
-  tiles: { flexDirection: "row", gap: 8 },
-  tile: { flex: 1, borderRadius: 14, padding: 10, gap: 2 },
-  tileLabel: { fontSize: 12, lineHeight: 16 },
-  tileValue: { fontSize: 15, lineHeight: 20, fontWeight: "700" },
   warnings: { borderRadius: 14, padding: 12, gap: 10 },
   warningRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
   warningDot: { marginTop: 6 },

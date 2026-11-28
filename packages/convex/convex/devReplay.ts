@@ -51,7 +51,7 @@ export const ensurePolicy = internalMutation({
       policy: {
         freshForMs: 5 * 60_000,
         hideAfterMs: 45 * 60_000,
-        maxDurationMs: 8 * 3_600_000,
+        maxDurationMs: 4 * 3_600_000,
         maxFutureSkewMs: 60_000,
         maxSampleAgeMs: 5 * 60_000,
         maxAccuracyMeters: 100,

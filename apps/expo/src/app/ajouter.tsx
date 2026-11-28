@@ -10,6 +10,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context"
 import * as Location from "expo-location"
 import { useRouter } from "expo-router"
+import { useConvexAuth, useQuery } from "convex/react"
+
+import { api } from "@omasla/convex"
 
 import type { Coordinate } from "~/lib/add-candidates"
 import { StarGlyph } from "~/components/favorite-star"
@@ -62,6 +65,13 @@ export default function AddPosition() {
   const c = usePalette()
   const router = useRouter()
   const catalog = useCatalog()
+  // Members also start their broadcast from « + ».
+  const convexAuth = useConvexAuth()
+  const mine = useQuery(
+    api.sessions.mine,
+    convexAuth.isAuthenticated ? {} : "skip",
+  )
+  const memberGroups = (mine?.groups ?? []).map((group) => group.title)
   const favorites = useFavorites()
   const user = useKnownPosition()
   const [search, setSearch] = useState("")
@@ -96,6 +106,32 @@ export default function AddPosition() {
         contentContainerStyle={s.content}
         ListHeaderComponent={
           <View style={s.header}>
+            {memberGroups.length > 0 && (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Diffuser la position de ${memberGroups.join(", ")}`}
+                onPress={() => router.replace("/diffusion")}
+                style={({ pressed }) => [
+                  s.broadcast,
+                  {
+                    backgroundColor: c.primarySoft,
+                    opacity: pressed ? 0.75 : 1,
+                  },
+                ]}
+              >
+                <Icon name="signal" color={c.primary} size={24} />
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Label style={s.broadcastTitle}>
+                    Diffuser{" "}
+                    {memberGroups.length === 1 ? memberGroups[0] : "mon groupe"}
+                  </Label>
+                  <Label muted style={s.caption}>
+                    Tu es avec ton groupe ? Partage sa position en direct.
+                  </Label>
+                </View>
+                <Icon name="chevron" color={c.primary} size={18} />
+              </Pressable>
+            )}
             <Label accessibilityRole="header" style={s.title}>
               Quel groupe vois-tu ?
             </Label>
@@ -200,6 +236,16 @@ export default function AddPosition() {
   )
 }
 const s = StyleSheet.create({
+  broadcast: {
+    minHeight: 64,
+    borderRadius: 16,
+    padding: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 8,
+  },
+  broadcastTitle: { fontSize: 17, lineHeight: 23, fontWeight: "700" },
   page: { flex: 1 },
   content: {
     paddingHorizontal: 22,
