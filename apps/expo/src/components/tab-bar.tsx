@@ -5,6 +5,7 @@ import * as Haptics from "expo-haptics"
 import { useRouter } from "expo-router"
 
 import type { IconName } from "~/theme/ui"
+import { useCatalog } from "~/lib/catalog"
 import { useBroadcasting } from "~/lib/use-broadcasting"
 import { Icon, Label, usePalette } from "~/theme/ui"
 
@@ -28,111 +29,147 @@ export default function TabBar({
   const c = usePalette()
   const router = useRouter()
   const broadcasting = useBroadcasting()
+  const catalog = useCatalog()
   const keyboard = useKeyboardVisible()
   if (keyboard) return null
   const routes = new Map(state.routes.map((route) => [route.name, route]))
   const focusedName = state.routes[state.index]?.name
+  const liveTitle = broadcasting
+    ? (catalog.data?.groups
+        .find((group) => group.id === broadcasting.groupId)
+        ?.title.replace(/ · démo$/, "") ?? "ton groupe")
+    : null
   return (
-    <View
-      accessibilityRole="tablist"
-      style={[
-        s.bar,
-        {
-          backgroundColor: c.surface,
-          borderTopColor: c.line,
-          paddingBottom: Math.max(insets.bottom, 8),
-        },
-      ]}
-    >
-      {order.map((name) => {
-        if (name === null)
+    <View>
+      {liveTitle && (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Diffusion en cours pour ${liveTitle}. Ouvrir la diffusion`}
+          onPress={() => router.push("/diffusion")}
+          style={({ pressed }) => [
+            s.banner,
+            { backgroundColor: c.success, opacity: pressed ? 0.85 : 1 },
+          ]}
+        >
+          <View style={[s.bannerDot, { backgroundColor: c.primaryText }]} />
+          <Label
+            numberOfLines={1}
+            maxFontSizeMultiplier={1.4}
+            style={[s.bannerText, { color: c.primaryText }]}
+          >
+            Diffusion en cours · {liveTitle}
+          </Label>
+          <Label
+            maxFontSizeMultiplier={1.4}
+            style={[s.bannerAction, { color: c.primaryText }]}
+          >
+            Ouvrir
+          </Label>
+          <Icon name="chevron" color={c.primaryText} size={14} />
+        </Pressable>
+      )}
+      <View
+        accessibilityRole="tablist"
+        style={[
+          s.bar,
+          {
+            backgroundColor: c.surface,
+            borderTopColor: c.line,
+            paddingBottom: Math.max(insets.bottom, 8),
+          },
+        ]}
+      >
+        {order.map((name) => {
+          if (name === null)
+            return (
+              <View key="add" style={s.slot}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    broadcasting
+                      ? "En direct. Ouvrir la diffusion"
+                      : "Ajouter une position"
+                  }
+                  onPress={() => {
+                    void Haptics.impactAsync(
+                      Haptics.ImpactFeedbackStyle.Medium,
+                    ).catch(() => undefined)
+                    router.push(broadcasting ? "/diffusion" : "/ajouter")
+                  }}
+                  style={({ pressed }) => [
+                    s.add,
+                    {
+                      backgroundColor: broadcasting ? c.success : c.primary,
+                      borderColor: c.surface,
+                      opacity: pressed ? 0.85 : 1,
+                      transform: [{ scale: pressed ? 0.96 : 1 }],
+                    },
+                  ]}
+                >
+                  {!broadcasting && (
+                    <View style={[s.accent, { backgroundColor: c.accent }]} />
+                  )}
+                  <Icon
+                    name={broadcasting ? "signal" : "plus"}
+                    color={c.primaryText}
+                    size={broadcasting ? 24 : 28}
+                  />
+                </Pressable>
+                <Label
+                  maxFontSizeMultiplier={1.3}
+                  numberOfLines={1}
+                  style={[
+                    s.label,
+                    {
+                      color: broadcasting ? c.success : c.ink,
+                      fontWeight: "700",
+                    },
+                  ]}
+                >
+                  {broadcasting ? "En direct" : "Ajouter"}
+                </Label>
+              </View>
+            )
+          const route = routes.get(name)
+          const meta = tabs[name]
+          if (!route || !meta) return null
+          const focused = focusedName === name
+          const color = focused ? c.primary : c.muted
           return (
-            <View key="add" style={s.slot}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={
-                  broadcasting
-                    ? "En direct. Ouvrir les commandes de diffusion"
-                    : "Ajouter une position"
-                }
-                onPress={() => {
-                  void Haptics.impactAsync(
-                    Haptics.ImpactFeedbackStyle.Medium,
-                  ).catch(() => undefined)
-                  if (broadcasting) {
-                    const moi = routes.get("moi")
-                    if (moi) navigateToTab(moi.key)
-                  } else router.push("/ajouter")
-                }}
-                style={({ pressed }) => [
-                  s.add,
-                  {
-                    backgroundColor: broadcasting ? c.success : c.primary,
-                    borderColor: c.surface,
-                    opacity: pressed ? 0.85 : 1,
-                    transform: [{ scale: pressed ? 0.96 : 1 }],
-                  },
-                ]}
-              >
-                {!broadcasting && (
-                  <View style={[s.accent, { backgroundColor: c.accent }]} />
-                )}
-                <Icon
-                  name={broadcasting ? "signal" : "plus"}
-                  color={c.primaryText}
-                  size={broadcasting ? 24 : 28}
-                />
-              </Pressable>
+            <Pressable
+              key={route.key}
+              accessibilityRole="tab"
+              accessibilityLabel={meta.title}
+              accessibilityState={{ selected: focused }}
+              onPress={() => {
+                const event = emitter.emit({
+                  type: "tabPress",
+                  target: route.key,
+                  canPreventDefault: true,
+                })
+                if (!focused && !event.defaultPrevented)
+                  navigateToTab(route.key)
+              }}
+              onLongPress={() =>
+                emitter.emit({ type: "tabLongPress", target: route.key })
+              }
+              style={({ pressed }) => [s.slot, { opacity: pressed ? 0.6 : 1 }]}
+            >
+              <Icon name={meta.icon} color={color} size={23} />
               <Label
                 maxFontSizeMultiplier={1.3}
                 numberOfLines={1}
                 style={[
                   s.label,
-                  {
-                    color: broadcasting ? c.success : c.ink,
-                    fontWeight: "700",
-                  },
+                  { color, fontWeight: focused ? "700" : "600" },
                 ]}
               >
-                {broadcasting ? "En direct" : "Ajouter"}
+                {meta.title}
               </Label>
-            </View>
+            </Pressable>
           )
-        const route = routes.get(name)
-        const meta = tabs[name]
-        if (!route || !meta) return null
-        const focused = focusedName === name
-        const color = focused ? c.primary : c.muted
-        return (
-          <Pressable
-            key={route.key}
-            accessibilityRole="tab"
-            accessibilityLabel={meta.title}
-            accessibilityState={{ selected: focused }}
-            onPress={() => {
-              const event = emitter.emit({
-                type: "tabPress",
-                target: route.key,
-                canPreventDefault: true,
-              })
-              if (!focused && !event.defaultPrevented) navigateToTab(route.key)
-            }}
-            onLongPress={() =>
-              emitter.emit({ type: "tabLongPress", target: route.key })
-            }
-            style={({ pressed }) => [s.slot, { opacity: pressed ? 0.6 : 1 }]}
-          >
-            <Icon name={meta.icon} color={color} size={23} />
-            <Label
-              maxFontSizeMultiplier={1.3}
-              numberOfLines={1}
-              style={[s.label, { color, fontWeight: focused ? "700" : "600" }]}
-            >
-              {meta.title}
-            </Label>
-          </Pressable>
-        )
-      })}
+        })}
+      </View>
     </View>
   )
 }
@@ -155,6 +192,19 @@ function useKeyboardVisible() {
 }
 
 const s = StyleSheet.create({
+  banner: {
+    // The centre button rises 26 pt into this strip: keep the text above it.
+    minHeight: 40,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 30,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  bannerDot: { width: 8, height: 8, borderRadius: 4 },
+  bannerText: { flex: 1, fontSize: 14, lineHeight: 19, fontWeight: "700" },
+  bannerAction: { fontSize: 13, lineHeight: 18, fontWeight: "600" },
   bar: {
     flexDirection: "row",
     alignItems: "flex-end",

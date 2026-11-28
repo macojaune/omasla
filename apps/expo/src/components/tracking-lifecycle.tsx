@@ -12,9 +12,13 @@ export default function TrackingLifecycle() {
     if (Platform.OS === "web") return
     const received = (response: Notifications.NotificationResponse) => {
       const screen = response.notification.request.content.data?.screen
-      // "/account" is kept for notifications scheduled by older builds.
-      if (screen === "/moi" || screen === "/account") {
-        router.navigate("/moi")
+      // "/moi" and "/account" are kept for notifications scheduled by older builds.
+      if (
+        screen === "/diffusion" ||
+        screen === "/moi" ||
+        screen === "/account"
+      ) {
+        router.push("/diffusion")
         void Notifications.clearLastNotificationResponseAsync()
       }
     }

@@ -1,16 +1,11 @@
 import { useEffect, useState } from "react"
-import { Linking, Platform, ScrollView, StyleSheet, View } from "react-native"
+import { ScrollView, StyleSheet, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
-import { useConvexAuth, useQuery } from "convex/react"
+import { useConvexAuth } from "convex/react"
 
 import { api } from "@omasla/convex"
 
-import BroadcastCard, {
-  AutoStopRules,
-  endLabels,
-} from "~/components/broadcast-card"
-import GroupEmblem from "~/components/group-emblem"
 import MapSources from "~/components/map-sources"
 import SignInPanel from "~/components/sign-in-panel"
 import {
@@ -21,8 +16,6 @@ import {
   stopNativeLocation,
   withTrackingTransition,
 } from "~/lib/background-location"
-import { ownsTrackingFeedback } from "~/lib/broadcast-status"
-import { useCatalog } from "~/lib/catalog"
 import { useLocationHandler } from "~/lib/useLocation"
 import { authenticatedClient, friendlyError } from "~/lib/write-api"
 import {
@@ -46,11 +39,6 @@ export default function Moi() {
   const auth = useNativeAuth()
   const convexAuth = useConvexAuth()
   const router = useRouter()
-  const catalog = useCatalog()
-  const account = useQuery(
-    api.accounts.me,
-    convexAuth.isAuthenticated ? {} : "skip",
-  )
   const tracking = useLocationHandler()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -102,24 +90,11 @@ export default function Moi() {
         Number(b.session.deviceId === tracking.installation) -
         Number(a.session.deviceId === tracking.installation),
     )
-  const idle = groups.filter(
-    (group) => !active.some((session) => session.groupId === group.id),
-  )
-  const ended =
-    tracking.mine?.sessions
-      .filter((session) => session.status === "ended")
-      .sort((a, b) => (b.endedAt ?? 0) - (a.endedAt ?? 0))
-      .slice(0, 3) ?? []
   const isMember = groups.length > 0
-  const trackingFeedbackInCard = live.some(({ session }) =>
-    ownsTrackingFeedback(session, tracking.installation, account?.id),
-  )
   const broadcastingHere = live.some(
     ({ session }) =>
       session.isEmitter && session.deviceId === tracking.installation,
   )
-  const publicGroup = (id: string) =>
-    catalog.data?.groups.find((item) => item.id === id)
   return (
     <SafeAreaView
       edges={["top", "left", "right"]}
@@ -151,115 +126,22 @@ export default function Moi() {
           </>
         ) : (
           <>
-            {live.map(({ group, session }) => (
-              <BroadcastCard
-                key={session.id}
-                session={session}
-                title={group.title}
-                group={publicGroup(group.id)}
-                accountId={account?.id}
-                tracking={tracking}
-                blocked={busy}
-              />
-            ))}
             {!tracking.mine && <LoadingIndicator />}
             {isMember && (
               <View style={styles.section}>
-                {idle.length > 0 && (
-                  <>
-                    <Label accessibilityRole="header" style={s.sectionTitle}>
-                      Diffuser
-                    </Label>
-                    <Label muted style={s.caption}>
-                      Démarre uniquement quand tu es avec le groupe. La
-                      diffusion continue écran verrouillé ; autorise les
-                      notifications pour recevoir ses avertissements.
-                    </Label>
-                  </>
-                )}
-                {!trackingFeedbackInCard && tracking.error && (
-                  <>
-                    <Notice tone="error">{tracking.error}</Notice>
-                    {Platform.OS !== "web" && (
-                      <Button
-                        title="Ouvrir les réglages"
-                        variant="secondary"
-                        onPress={() => void Linking.openSettings()}
-                      />
-                    )}
-                  </>
-                )}
-                {!broadcastingHere && tracking.local?.pendingStop && (
-                  <Notice tone="warning">
-                    {tracking.running
-                      ? "L’arrêt de la diffusion reste à confirmer sur ce téléphone. Réessaie ou ouvre les réglages."
-                      : "La diffusion est arrêtée sur ce téléphone. Confirme l’arrêt auprès du service pour libérer le groupe."}
-                  </Notice>
-                )}
-                {idle.length > 0 && catalog.offline && (
-                  <Notice tone="warning">
-                    Hors ligne : démarrer la diffusion demande le réseau.
-                  </Notice>
-                )}
-                {idle.map((group) => {
-                  const known = publicGroup(group.id)
-                  return (
-                    <View
-                      key={group.id}
-                      style={[s.groupRow, { borderTopColor: c.line }]}
-                    >
-                      <View style={s.groupHeading}>
-                        {known ? (
-                          <GroupEmblem group={known} size={40} />
-                        ) : (
-                          <Icon name="signal" color={c.muted} size={24} />
-                        )}
-                        <Label style={[s.rowTitle, { flex: 1 }]}>
-                          {group.title}
-                        </Label>
-                      </View>
-                      <Button
-                        title="Démarrer la diffusion"
-                        icon="signal"
-                        disabled={
-                          busy || !catalog.canWrite || Boolean(tracking.local)
-                        }
-                        busy={tracking.busy}
-                        onPress={() => void tracking.start(group.id)}
-                      />
-                    </View>
-                  )
-                })}
-                {live.length === 0 && <AutoStopRules />}
-              </View>
-            )}
-            {isMember && ended.length > 0 && (
-              <View
-                style={[styles.section, s.divided, { borderColor: c.line }]}
-              >
                 <Label accessibilityRole="header" style={s.sectionTitle}>
-                  Dernières diffusions
+                  Ton groupe
                 </Label>
-                {ended.map((session) => (
-                  <View
-                    key={session.id}
-                    style={[s.historyRow, { borderBottomColor: c.line }]}
-                  >
-                    <Label style={{ fontWeight: "700" }}>
-                      {groups.find((group) => group.id === session.groupId)
-                        ?.title ??
-                        publicGroup(session.groupId)?.title ??
-                        "Groupe"}
-                    </Label>
-                    <Label muted style={{ fontSize: 14 }}>
-                      {endLabels[session.endReason ?? ""] ??
-                        "Diffusion terminée"}
-                      {session.endedAt
-                        ? ` · ${new Date(session.endedAt).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`
-                        : ""}
-                    </Label>
-                  </View>
-                ))}
+                <Button
+                  title={
+                    live.length
+                      ? "Diffusion en cours · ouvrir"
+                      : "Diffuser la position de mon groupe"
+                  }
+                  icon="signal"
+                  variant={live.length ? "primary" : "secondary"}
+                  onPress={() => router.push("/diffusion")}
+                />
               </View>
             )}
             <View style={[styles.section, s.divided, { borderColor: c.line }]}>
