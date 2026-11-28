@@ -74,6 +74,9 @@ export default function TabBar({
                   },
                 ]}
               >
+                {!broadcasting && (
+                  <View style={[s.accent, { backgroundColor: c.accent }]} />
+                )}
                 <Icon
                   name={broadcasting ? "signal" : "plus"}
                   color={c.primaryText}
@@ -167,6 +170,13 @@ const s = StyleSheet.create({
     gap: 3,
   },
   label: { fontSize: 11, lineHeight: 14, textAlign: "center" },
+  accent: {
+    position: "absolute",
+    top: -11,
+    width: 20,
+    height: 5,
+    borderRadius: 3,
+  },
   add: {
     width: 58,
     height: 58,
@@ -175,7 +185,7 @@ const s = StyleSheet.create({
     marginTop: -26,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#14253D",
+    shadowColor: "#3A1497",
     shadowOpacity: 0.25,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
